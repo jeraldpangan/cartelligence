@@ -10,7 +10,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../auth/auth.service';
 import { CartService } from '../../cart/cart.service';
 import { ChatbotService, ChatMessage } from '../../core/chatbot.service';
+import { CatalogService } from '../../catalog/catalog.service';
 import { UserRole } from '@shared/enums';
+import { UserSurveyComponent } from '../../buyer/user-survey/user-survey.component';
 
 @Component({
   selector: 'app-header',
@@ -25,6 +27,7 @@ import { UserRole } from '@shared/enums';
     MatBadgeModule,
     MatButtonModule,
     MatTooltipModule,
+    UserSurveyComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
@@ -48,13 +51,16 @@ export class HeaderComponent implements OnInit {
   ]);
 
   activeTab = signal<'assistant' | 'review'>('assistant');
+  chatView = signal<'chat' | 'survey' | 'promo'>('chat');
   selectedStyle = signal<string>('Minimalist');
   selectedBudget = signal<string>('₱100 - ₱500');
+  recommendationStatus = signal<string>('unavailable');
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
   private readonly chatbotService = inject(ChatbotService);
+  private readonly catalogService = inject(CatalogService);
 
   searchControl = new FormControl('');
   chatControl = new FormControl('');
@@ -72,6 +78,7 @@ export class HeaderComponent implements OnInit {
       this.cartService.getCart().subscribe({
         error: (err) => console.warn('[Header] Failed to fetch initial cart:', err),
       });
+      this.checkCalibrationStatus();
     }
   }
 
@@ -101,6 +108,46 @@ export class HeaderComponent implements OnInit {
     this.isChatOpen.update((prev) => !prev);
     if (this.isChatOpen()) {
       setTimeout(() => this.scrollToBottom(), 100);
+      this.checkCalibrationStatus(() => {
+        if (this.recommendationStatus() !== 'calibrated') {
+          this.chatView.set('promo');
+        } else {
+          this.chatView.set('chat');
+        }
+      });
+    }
+  }
+
+  checkCalibrationStatus(callback?: () => void): void {
+    if (this.isBuyer) {
+      this.catalogService.getHybridRecommendations(1).subscribe({
+        next: (res) => {
+          const status = res.status === 'hybrid_personalized' ? 'calibrated' : (res.status || 'unavailable');
+          this.recommendationStatus.set(status);
+          if (callback) callback();
+        },
+        error: (err) => {
+          console.warn('[Header] Failed to fetch hybrid recommendations status:', err);
+          if (callback) callback();
+        }
+      });
+    } else {
+      if (callback) callback();
+    }
+  }
+
+  onSurveySaved(): void {
+    this.checkCalibrationStatus(() => {
+      this.chatView.set('chat');
+      this.activeTab.set('assistant');
+    });
+  }
+
+  onSurveyCancelled(): void {
+    if (this.recommendationStatus() === 'calibrated') {
+      this.chatView.set('chat');
+    } else {
+      this.chatView.set('promo');
     }
   }
 

@@ -14,6 +14,9 @@ import {
   validateCreateReviewDto,
   REVIEWS_PER_PAGE,
 } from './review.dto';
+import { FakeReviewDetector } from './fake-review-detector.service';
+import { ReviewSummarizer } from './review-summarizer.service';
+import { SellerPerformanceService } from './seller-performance.service';
 
 /** Default TTL for review summary cache in seconds (1 hour) */
 const REVIEW_SUMMARY_CACHE_TTL = 3600;
@@ -29,10 +32,18 @@ const REVIEW_SUMMARY_CACHE_TTL = 3600;
 export class ReviewService {
   private pool: Pool;
   private cacheService: CacheService;
+  private sellerPerformanceService: SellerPerformanceService;
 
-  constructor(pool?: Pool, redis?: Redis, cacheService?: CacheService) {
+  constructor(
+    pool?: Pool,
+    redis?: Redis,
+    cacheService?: CacheService,
+    sellerPerformanceService?: SellerPerformanceService,
+  ) {
     this.pool = pool || getDatabasePool();
     this.cacheService = cacheService || new CacheService(redis || getRedisClient());
+    this.sellerPerformanceService =
+      sellerPerformanceService || new SellerPerformanceService(this.pool);
   }
 
   /**
@@ -110,16 +121,39 @@ export class ReviewService {
       );
     }
 
-    // Step 4: Insert review
-    const result = await this.pool.query(
-      `INSERT INTO product_review (product_id, user_id, rating, comment)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [dto.productId, userId, dto.rating, trimmedComment],
+    // Step 4: Run Fake Review Detection using Random Forest Classifier
+    const detection = await FakeReviewDetector.evaluateReview(
+      this.pool,
+      userId,
+      dto.productId,
+      trimmedComment,
+      dto.rating,
+      false // default image_verified to false upon submission
     );
 
-    // Step 5: Invalidate review summary cache using CacheService (Requirements: 8.2, 8.3, 8.4, 8.5)
+    // Step 5: Insert review with ML flags
+    const result = await this.pool.query(
+      `INSERT INTO product_review (product_id, user_id, rating, comment, is_fake, fake_probability)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [dto.productId, userId, dto.rating, trimmedComment, detection.isFake, detection.probability],
+    );
+
+    // Step 6: Invalidate review summary cache using CacheService (Requirements: 8.2, 8.3, 8.4, 8.5)
     await this.cacheService.invalidateReviewSummaryCache(dto.productId);
+
+    // Reactively trigger seller reliability recalculation (fire-and-forget)
+    this.pool
+      .query('SELECT seller_id FROM product WHERE id = $1', [dto.productId])
+      .then((res) => {
+        const sellerId = res.rows[0]?.seller_id;
+        if (sellerId) {
+          this.sellerPerformanceService.recalculateSellerReliability(sellerId);
+        }
+      })
+      .catch((err) => {
+        console.error('[ReviewService] Failed to trigger seller reliability recalculation:', err);
+      });
 
     return this.mapRowToReview(result.rows[0]);
   }
@@ -232,6 +266,17 @@ export class ReviewService {
         // Round to 1 decimal place using round-half-up
         const averageRating = totalReviews === 0 ? 0 : roundHalfUp(avgRating, 1);
 
+        // Fetch comments of non-fake reviews to build NLP summary
+        const commentsResult = await this.pool.query(
+          `SELECT comment FROM product_review 
+           WHERE product_id = $1 AND is_fake = false 
+           ORDER BY created_at DESC 
+           LIMIT 30`,
+          [productId]
+        );
+        const comments = commentsResult.rows.map((r) => r.comment as string);
+        const nlpSummary = await ReviewSummarizer.summarize(comments);
+
         return {
           averageRating,
           totalReviews,
@@ -242,6 +287,7 @@ export class ReviewService {
             4: parseInt(row.rating_4, 10),
             5: parseInt(row.rating_5, 10),
           },
+          nlpSummary
         };
       },
     );
@@ -285,6 +331,19 @@ export class ReviewService {
 
     // Invalidate review summary cache using CacheService (Requirements: 8.2, 8.3, 8.4, 8.5)
     await this.cacheService.invalidateReviewSummaryCache(review.product_id);
+
+    // Reactively trigger seller reliability recalculation (fire-and-forget)
+    this.pool
+      .query('SELECT seller_id FROM product WHERE id = $1', [review.product_id])
+      .then((res) => {
+        const sellerId = res.rows[0]?.seller_id;
+        if (sellerId) {
+          this.sellerPerformanceService.recalculateSellerReliability(sellerId);
+        }
+      })
+      .catch((err) => {
+        console.error('[ReviewService] Failed to trigger seller reliability recalculation:', err);
+      });
   }
 
   /**
@@ -297,6 +356,9 @@ export class ReviewService {
       userId: row.user_id as string,
       rating: row.rating as number,
       comment: row.comment as string,
+      isFake: row.is_fake as boolean,
+      fakeProbability: parseFloat(String(row.fake_probability || '0')),
+      imageVerified: row.image_verified as boolean,
       createdAt: (row.created_at as Date).toISOString(),
       updatedAt: (row.updated_at as Date).toISOString(),
     };

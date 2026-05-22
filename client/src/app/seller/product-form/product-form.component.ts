@@ -147,6 +147,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     [ProductCategory.Snacks]: 'Snacks',
     [ProductCategory.Household]: 'Household',
     [ProductCategory.PersonalCare]: 'Personal Care',
+    [ProductCategory.BabiesToys]: 'Babies & Toys',
   };
 
   // ─── Image state ─────────────────────────────────────────────────────────────

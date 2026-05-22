@@ -51,14 +51,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   currentQuery = '';
 
   ngOnInit(): void {
-    // Listen to query parameters from header searches
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      const q = params['q'] || '';
-      if (this.searchControl.value !== q) {
-        this.searchControl.setValue(q);
-      }
-    });
-
     this.searchControl.valueChanges
       .pipe(
         takeUntil(this.destroy$),
@@ -101,6 +93,14 @@ export class SearchBarComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
       });
+
+    // Listen to query parameters from header searches after setting up form listener
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const q = params['q'] || '';
+      if (this.searchControl.value !== q) {
+        this.searchControl.setValue(q);
+      }
+    });
   }
 
   ngOnDestroy(): void {

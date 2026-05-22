@@ -17,6 +17,7 @@ export enum ProductCategory {
   Snacks = 'snacks',
   Household = 'household',
   PersonalCare = 'personal_care',
+  BabiesToys = 'babies_toys',
 }
 
 /**

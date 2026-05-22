@@ -69,6 +69,65 @@
         }
 
       </div>
+
+      <!-- 🧠 NLP AI Review Synthesis Card (Premium Glassmorphism + Gradients) -->
+      @if (summary.nlpSummary && summary.totalReviews > 0) {
+        <div class="nlp-summary-card animate-fade-in" aria-label="AI Review Synthesis">
+          <div class="nlp-summary-card__glow-layer"></div>
+          
+          <div class="nlp-summary-card__header">
+            <div class="nlp-summary-card__header-icon-ring">
+              <mat-icon class="nlp-summary-card__spark-icon">auto_awesome</mat-icon>
+            </div>
+            <div class="nlp-summary-card__header-text">
+              <h3 class="nlp-summary-card__title">AI Review Synthesis</h3>
+              <p class="nlp-summary-card__subtitle">Aggregated insights from customer feedback powered by Cartelligence NLP</p>
+            </div>
+          </div>
+
+          <div class="nlp-summary-card__consensus">
+            <p>{{ summary.nlpSummary.summaryText }}</p>
+          </div>
+
+          <div class="nlp-summary-card__grid">
+            <!-- Product Quality Card -->
+            <div class="nlp-grid-item nlp-grid-item--quality">
+              <div class="nlp-grid-item__header">
+                <mat-icon class="nlp-grid-item__icon">energy_savings_leaf</mat-icon>
+                <span class="nlp-grid-item__title">Product Quality</span>
+                <span class="nlp-grid-item__badge" [class.nlp-grid-item__badge--positive]="!summary.nlpSummary.productQuality.toLowerCase().includes('inconsistent') && !summary.nlpSummary.productQuality.toLowerCase().includes('bruised')">
+                  {{ summary.nlpSummary.productQuality.toLowerCase().includes('outstanding') || summary.nlpSummary.productQuality.toLowerCase().includes('fresh') ? '🥬 Excellent' : summary.nlpSummary.productQuality.toLowerCase().includes('bruised') || summary.nlpSummary.productQuality.toLowerCase().includes('inconsistent') ? '⚠️ Mixed' : '✨ Standard' }}
+                </span>
+              </div>
+              <p class="nlp-grid-item__text">{{ summary.nlpSummary.productQuality }}</p>
+            </div>
+
+            <!-- Seller Credibility Card -->
+            <div class="nlp-grid-item nlp-grid-item--credibility">
+              <div class="nlp-grid-item__header">
+                <mat-icon class="nlp-grid-item__icon">handshake</mat-icon>
+                <span class="nlp-grid-item__title">Seller Credibility</span>
+                <span class="nlp-grid-item__badge" [class.nlp-grid-item__badge--positive]="summary.nlpSummary.sellerCredibility.toLowerCase().includes('reliable') || summary.nlpSummary.sellerCredibility.toLowerCase().includes('dependable')">
+                  {{ summary.nlpSummary.sellerCredibility.toLowerCase().includes('highly reliable') || summary.nlpSummary.sellerCredibility.toLowerCase().includes('exceptional') ? '🤝 Trusted' : '📦 Dependable' }}
+                </span>
+              </div>
+              <p class="nlp-grid-item__text">{{ summary.nlpSummary.sellerCredibility }}</p>
+            </div>
+
+            <!-- Customer Satisfaction Card -->
+            <div class="nlp-grid-item nlp-grid-item--satisfaction">
+              <div class="nlp-grid-item__header">
+                <mat-icon class="nlp-grid-item__icon">sentiment_satisfied_alt</mat-icon>
+                <span class="nlp-grid-item__title">Customer Satisfaction</span>
+                <span class="nlp-grid-item__badge" [class.nlp-grid-item__badge--positive]="summary.nlpSummary.customerSatisfaction.toLowerCase().includes('excellent') || summary.nlpSummary.customerSatisfaction.toLowerCase().includes('recommend')">
+                  {{ summary.nlpSummary.customerSatisfaction.toLowerCase().includes('excellent') || summary.nlpSummary.customerSatisfaction.toLowerCase().includes('highly recommend') ? '⭐ Delighted' : '👍 Favorable' }}
+                </span>
+              </div>
+              <p class="nlp-grid-item__text">{{ summary.nlpSummary.customerSatisfaction }}</p>
+            </div>
+          </div>
+        </div>
+      }
     }
 
     <!-- ── Empty State (Requirement 6.2) ── -->
@@ -93,7 +152,23 @@
                   {{ review.reviewerName.charAt(0).toUpperCase() }}
                 </span>
                 <div class="review-item__reviewer-info">
-                  <span class="review-item__name">{{ review.reviewerName }}</span>
+                  <div class="review-item__name-row">
+                    <span class="review-item__name">{{ review.reviewerName }}</span>
+                    @if (review.isFake) {
+                      <span class="review-badge review-badge--fake" title="This review was flagged as potential spam/fraud by our Random Forest classifier.">
+                        <mat-icon>warning</mat-icon> Flagged as Suspicious
+                      </span>
+                    } @else {
+                      <span class="review-badge review-badge--verified-buyer">
+                        <mat-icon>verified</mat-icon> Verified Buyer
+                      </span>
+                    }
+                    @if (review.imageVerified) {
+                      <span class="review-badge review-badge--image-verified">
+                        <mat-icon>image_search</mat-icon> Verified Image
+                      </span>
+                    }
+                  </div>
                   <time
                     class="review-item__date"
                     [attr.datetime]="review.createdAt"

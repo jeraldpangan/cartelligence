@@ -28,10 +28,10 @@ describe('ProductService', () => {
   });
 
   describe('getCategories', () => {
-    it('should return all 7 grocery categories', async () => {
+    it('should return all 8 grocery categories', async () => {
       const categories = await service.getCategories();
 
-      expect(categories).toHaveLength(7);
+      expect(categories).toHaveLength(8);
       expect(categories.map((c: CategoryInfo) => c.id)).toEqual(
         expect.arrayContaining([
           ProductCategory.Produce,
@@ -41,6 +41,7 @@ describe('ProductService', () => {
           ProductCategory.Snacks,
           ProductCategory.Household,
           ProductCategory.PersonalCare,
+          ProductCategory.BabiesToys,
         ]),
       );
     });
@@ -402,7 +403,7 @@ describe('ProductService', () => {
 
       const categories = await service.getCategories();
 
-      expect(categories).toHaveLength(7);
+      expect(categories).toHaveLength(8);
     });
   });
 });

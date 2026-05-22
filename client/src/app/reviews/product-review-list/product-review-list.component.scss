@@ -265,3 +265,268 @@
     word-break: break-word;
   }
 }
+
+// 🧠 NLP AI Review Synthesis Card (Premium Glassmorphism + Gradients)
+.nlp-summary-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  font-family: 'Outfit', 'Inter', sans-serif;
+
+  :host-context(.dark-theme) & {
+    background: rgba(18, 18, 24, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    color: #e5e7eb;
+  }
+
+  &__glow-layer {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 60%);
+    pointer-events: none;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__header-icon-ring {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  }
+
+  &__spark-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #ffffff;
+  }
+
+  &__header-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    :host-context(.dark-theme) & {
+      background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.825rem;
+    color: #71717a;
+    margin: 0.15rem 0 0 0;
+
+    :host-context(.dark-theme) & {
+      color: #a1a1aa;
+    }
+  }
+
+  &__consensus {
+    background: rgba(99, 102, 241, 0.04);
+    border-left: 3px solid #6366f1;
+    border-radius: 0 8px 8px 0;
+    padding: 0.95rem 1.25rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+
+    p {
+      margin: 0;
+      font-size: 0.925rem;
+      line-height: 1.5;
+      font-style: italic;
+      color: #3f3f46;
+
+      :host-context(.dark-theme) & {
+        color: #e4e4e7;
+      }
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.nlp-grid-item {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 12px;
+  padding: 1.15rem;
+  transition: all 0.3s ease;
+
+  :host-context(.dark-theme) & {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  &__icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #6366f1;
+  }
+
+  &__title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #27272a;
+
+    :host-context(.dark-theme) & {
+      color: #f4f4f5;
+    }
+  }
+
+  &__badge {
+    font-size: 0.725rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 12px;
+    background: rgba(113, 113, 122, 0.08);
+    color: #71717a;
+
+    :host-context(.dark-theme) & {
+      background: rgba(161, 161, 170, 0.1);
+      color: #a1a1aa;
+    }
+
+    &--positive {
+      background: rgba(16, 185, 129, 0.08);
+      color: #10b981;
+
+      :host-context(.dark-theme) & {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+      }
+    }
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #52525b;
+
+    :host-context(.dark-theme) & {
+      color: #d4d4d8;
+    }
+  }
+}
+
+// ── Review Badges (AI / Fake / Image Check)
+.review-item__name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.review-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.725rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  line-height: 1;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+
+  &--fake {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    animation: badgePulse 2s infinite ease-in-out;
+
+    :host-context(.dark-theme) & {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+  }
+
+  &--verified-buyer {
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+
+    :host-context(.dark-theme) & {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+  }
+
+  &--image-verified {
+    background: rgba(59, 130, 246, 0.08);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+
+    :host-context(.dark-theme) & {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+  }
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 0 6px rgba(239, 68, 68, 0.25); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+

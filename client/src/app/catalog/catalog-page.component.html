@@ -1,147 +1,288 @@
 <div class="catalog-page-container">
-  
+
   <!-- Render Search Results if query parameter is active -->
   @if (showSearch) {
-    <div class="search-results-wrapper fade-in">
-      <div class="search-results-header">
-        <h2 class="search-results-title">Search Results for "{{ searchQuery }}"</h2>
-        <a routerLink="/catalog" class="back-home-link">
-          <mat-icon>arrow_back</mat-icon>
-          <span>Back to Catalog</span>
-        </a>
-      </div>
-      <app-search-bar></app-search-bar>
+  <div class="search-results-wrapper fade-in">
+    <div class="search-results-header">
+      <h2 class="search-results-title">Search Results for "{{ searchQuery }}"</h2>
+      <a routerLink="/catalog" class="back-home-link">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Back to Catalog</span>
+      </a>
     </div>
+    <app-search-bar></app-search-bar>
+  </div>
   } @else {
-    <!-- Main Premium Dashboard -->
-    <div class="dashboard-wrapper fade-in">
-      
-      <!-- Top 2-Column Section (Categories Sidebar & Hero Banner) -->
-      <div class="top-row-grid">
-        
-        <!-- Left Sidebar: Categories Navigation -->
-        <aside class="sidebar-categories" aria-label="Product categories">
-          <ul class="category-list">
-            @for (category of sidebarCategories; track category.id) {
-              <li 
-                class="category-item" 
-                (click)="onCategorySelect(category)"
-                (keydown.enter)="onCategorySelect(category)"
-                tabindex="0"
-                role="button"
-                [attr.aria-label]="'Browse ' + category.name + ' category'"
-              >
-                <div class="category-icon-wrapper">
-                  <mat-icon class="category-icon">{{ category.icon }}</mat-icon>
-                </div>
-                <span class="category-name">{{ category.name }}</span>
-              </li>
-            }
-          </ul>
-        </aside>
+  <!-- Main Premium Dashboard -->
+  <div class="dashboard-wrapper fade-in">
 
-        <!-- Right: Promotional Hero Banner -->
-        <div class="promo-hero-section">
-          <div class="hero-banner" style="background-image: url('/hero-workspace.png')">
-            <div class="hero-content">
-              <span class="hero-subtitle">EXCLUSIVE PRE-ORDER</span>
-              <h1 class="hero-title">Redefine Your Digital Workspace</h1>
-              <p class="hero-description">Premium tech essentials curated for the modern minimalist professional.</p>
-              <button class="hero-cta-button hover-lift">DISCOVER NOW</button>
+    <!-- Top 2-Column Section (Categories Sidebar & Hero Banner) -->
+    <div class="top-row-grid">
+
+      <!-- Left Sidebar: Categories Navigation -->
+      <aside class="sidebar-categories" aria-label="Product categories">
+        <ul class="category-list">
+          @for (category of sidebarCategories; track category.id) {
+          <li class="category-item" [class.active]="isCategoryActive(category)" (click)="onCategorySelect(category)" (keydown.enter)="onCategorySelect(category)"
+            tabindex="0" role="button" [attr.aria-label]="'Browse ' + category.name + ' category'">
+            <div class="category-icon-wrapper">
+              <mat-icon class="category-icon">{{ category.icon }}</mat-icon>
             </div>
-            
-            <!-- Slider Dots Indicator -->
-            <div class="slider-dots" aria-hidden="true">
-              <span class="slider-dot active"></span>
-              <span class="slider-dot"></span>
-              <span class="slider-dot"></span>
-              <span class="slider-dot"></span>
+            <span class="category-name">{{ category.name }}</span>
+          </li>
+          }
+        </ul>
+      </aside>
+
+      <!-- Right Column: Hero Banner OR Category Products Grid -->
+      @if (selectedCategoryId) {
+      <div class="category-view-section fade-in">
+        <div class="category-view-header">
+          <div class="category-title-wrapper">
+            <h2 class="category-view-title">{{ categoryName }}</h2>
+            <span class="category-items-count">{{ totalCategoryItems }} items found</span>
+          </div>
+          <a routerLink="/catalog" class="clear-category-link hover-lift">
+            <mat-icon>close</mat-icon> Clear Filter
+          </a>
+        </div>
+
+        @if (loadingCategoryProducts) {
+        <div class="category-loading">
+          <mat-spinner diameter="40" color="primary"></mat-spinner>
+          <p>Consulting catalog items...</p>
+        </div>
+        } @else if (categoryProducts.length === 0) {
+        <div class="category-empty">
+          <mat-icon class="empty-icon">search_off</mat-icon>
+          <p>No products available under this segment.</p>
+        </div>
+        } @else {
+        <div class="category-products-grid">
+          @for (product of categoryProducts; track product.id) {
+          <article class="product-card hover-lift" [routerLink]="['/catalog/product', product.id]" style="cursor: pointer;">
+            <div class="product-image-container">
+              <img [src]="product.image" [alt]="product.name" class="product-image" loading="lazy" />
+              <span class="discount-badge">-{{ getDiscountPercentage(product.price, product.originalPrice) }}%</span>
+              @if (product.stockQuantity <= 0 || !product.isAvailable) {
+              <span class="stock-badge out-of-stock">Out of Stock</span>
+              } @else if (product.stockQuantity < 5) {
+              <span class="stock-badge low-stock">Low Stock</span>
+              } @else {
+              <span class="stock-badge in-stock">In Stock</span>
+              }
             </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Quick Promo Cards (Flash Sale, Vouchers, Global Store) -->
-      <div class="quick-promos-grid">
-        <!-- Card 1: Flash Sale -->
-        <div class="quick-promo-card hover-lift">
-          <div class="promo-badge-circle flash-badge">
-            <mat-icon class="promo-badge-icon">flash_on</mat-icon>
-          </div>
-          <div class="promo-text-container">
-            <span class="promo-title">Flash Sale</span>
-            <span class="promo-desc">Hurry, limited time!</span>
-          </div>
-        </div>
-
-        <!-- Card 2: Vouchers -->
-        <div class="quick-promo-card hover-lift">
-          <div class="promo-badge-circle voucher-badge">
-            <mat-icon class="promo-badge-icon">local_offer</mat-icon>
-          </div>
-          <div class="promo-text-container">
-            <span class="promo-title">Vouchers</span>
-            <span class="promo-desc">Extra 15% OFF</span>
-          </div>
-        </div>
-
-        <!-- Card 3: Global Store -->
-        <div class="quick-promo-card hover-lift">
-          <div class="promo-badge-circle global-badge">
-            <mat-icon class="promo-badge-icon">diamond</mat-icon>
-          </div>
-          <div class="promo-text-container">
-            <span class="promo-title">Global Store</span>
-            <span class="promo-desc">Direct from Japan</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- FLASH SALE Section -->
-      <section class="flash-sale-section" aria-labelledby="flash-sale-title">
-        <div class="flash-sale-header">
-          <div class="flash-sale-title-timer">
-            <h2 id="flash-sale-title" class="flash-title">FLASH SALE</h2>
-            <div class="countdown-container">
-              <span class="ends-in-text">Ends in:</span>
-              <div class="timer-box-wrapper">
-                <span class="timer-box">{{ countdownHours }}</span>
-                <span class="timer-colon">:</span>
-                <span class="timer-box">{{ countdownMinutes }}</span>
-                <span class="timer-colon">:</span>
-                <span class="timer-box">{{ countdownSeconds }}</span>
+            <div class="product-info">
+              <h3 class="product-name" [title]="product.name">{{ product.name }}</h3>
+              <p class="product-unit">{{ product.unit }}</p>
+              <div class="product-rating-row">
+                <span class="star-icon">★</span>
+                <span class="rating-value">{{ product.rating }}</span>
+                <span class="reviews-count">({{ product.reviewsCount }})</span>
+              </div>
+              <div class="product-price-row">
+                <span class="price-current">{{ formatPrice(product.price) }}</span>
+                <span class="price-original">{{ formatPrice(product.originalPrice) }}</span>
               </div>
             </div>
-          </div>
-          <a routerLink="/catalog" class="view-all-link">VIEW ALL</a>
-        </div>
-
-        <!-- Horizontal Product Grid of 6 Items -->
-        <div class="products-horizontal-grid">
-          @for (product of premiumProducts; track product.id) {
-            <article class="product-card hover-lift">
-              <div class="product-image-container">
-                <img [src]="product.image" [alt]="product.name" class="product-image" loading="lazy" />
-                <span class="discount-badge">-{{ getDiscountPercentage(product.price, product.originalPrice) }}%</span>
-              </div>
-              <div class="product-info">
-                <h3 class="product-name">{{ product.name }}</h3>
-                <div class="product-rating-row">
-                  <span class="star-icon">★</span>
-                  <span class="rating-value">{{ product.rating }}</span>
-                  <span class="reviews-count">({{ product.reviewsCount }})</span>
-                </div>
-                <div class="product-price-row">
-                  <span class="price-current">{{ formatPrice(product.price) }}</span>
-                  <span class="price-original">{{ formatPrice(product.originalPrice) }}</span>
-                </div>
-              </div>
-            </article>
+          </article>
           }
         </div>
-      </section>
+
+        <!-- Styled Paginator -->
+        @if (totalCategoryItems > pageSize) {
+        <div class="category-paginator-row">
+          <button class="paginator-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+            <mat-icon>chevron_left</mat-icon> Previous
+          </button>
+          <span class="page-indicator">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="paginator-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+            Next <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+        }
+        }
+      </div>
+      } @else {
+      <div class="promo-hero-section">
+        <div class="hero-banner" style="background-image: url('/hero-workspace.png')">
+          <div class="hero-content">
+            <span class="hero-subtitle">EXCLUSIVE PRE-ORDER</span>
+            <h1 class="hero-title">Redefine Your Digital Workspace</h1>
+            <p class="hero-description">Premium tech essentials curated for the modern minimalist professional.</p>
+            <button class="hero-cta-button hover-lift">DISCOVER NOW</button>
+          </div>
+
+          <!-- Slider Dots Indicator -->
+          <div class="slider-dots" aria-hidden="true">
+            <span class="slider-dot active"></span>
+            <span class="slider-dot"></span>
+            <span class="slider-dot"></span>
+            <span class="slider-dot"></span>
+          </div>
+        </div>
+      </div>
+      }
 
     </div>
+
+    @if (!selectedCategoryId) {
+    <!-- Quick Promo Cards (Flash Sale, Vouchers, Global Store) -->
+    <div class="quick-promos-grid">
+      <!-- Card 1: Flash Sale -->
+      <div class="quick-promo-card hover-lift">
+        <div class="promo-badge-circle flash-badge">
+          <mat-icon class="promo-badge-icon">flash_on</mat-icon>
+        </div>
+        <div class="promo-text-container">
+          <span class="promo-title">Flash Sale</span>
+          <span class="promo-desc">Hurry, limited time!</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Vouchers -->
+      <div class="quick-promo-card hover-lift">
+        <div class="promo-badge-circle voucher-badge">
+          <mat-icon class="promo-badge-icon">local_offer</mat-icon>
+        </div>
+        <div class="promo-text-container">
+          <span class="promo-title">Vouchers</span>
+          <span class="promo-desc">Extra 15% OFF</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Global Store -->
+      <div class="quick-promo-card hover-lift">
+        <div class="promo-badge-circle global-badge">
+          <mat-icon class="promo-badge-icon">diamond</mat-icon>
+        </div>
+        <div class="promo-text-container">
+          <span class="promo-title">Global Store</span>
+          <span class="promo-desc">Direct from Japan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLASH SALE Section -->
+    <section class="flash-sale-section" aria-labelledby="flash-sale-title">
+      <div class="flash-sale-header">
+        <div class="flash-sale-title-timer">
+          <h2 id="flash-sale-title" class="flash-title">FLASH SALE</h2>
+          <div class="countdown-container">
+            <span class="ends-in-text">Ends in:</span>
+            <div class="timer-box-wrapper">
+              <span class="timer-box">{{ countdownHours }}</span>
+              <span class="timer-colon">:</span>
+              <span class="timer-box">{{ countdownMinutes }}</span>
+              <span class="timer-colon">:</span>
+              <span class="timer-box">{{ countdownSeconds }}</span>
+            </div>
+          </div>
+        </div>
+        <a routerLink="/catalog" class="view-all-link">VIEW ALL</a>
+      </div>
+
+      <!-- Horizontal Product Grid of 6 Items -->
+      <div class="products-horizontal-grid">
+        @for (product of flashProducts; track product.id) {
+        <article class="product-card hover-lift" [routerLink]="['/catalog/product', product.id]"
+          style="cursor: pointer;">
+          <div class="product-image-container">
+            <img [src]="product.image" [alt]="product.name" class="product-image" loading="lazy" />
+            <span class="discount-badge">-{{ getDiscountPercentage(product.price, product.originalPrice) }}%</span>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <div class="product-rating-row">
+              <span class="star-icon">★</span>
+              <span class="rating-value">{{ product.rating }}</span>
+              <span class="reviews-count">({{ product.reviewsCount }})</span>
+            </div>
+            <div class="product-price-row">
+              <span class="price-current">{{ formatPrice(product.price) }}</span>
+              <span class="price-original">{{ formatPrice(product.originalPrice) }}</span>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+    </section>
+
+    <!-- AI HYBRID RECOMMENDATIONS SECTION -->
+    <section class="hybrid-rec-section" aria-labelledby="hybrid-rec-title">
+      <div class="hybrid-rec-header">
+        <div class="hybrid-rec-title-row">
+          <div class="glow-spark-ring">
+            <mat-icon class="ai-sparkle-icon animate-pulse">auto_awesome</mat-icon>
+          </div>
+          <div class="title-meta">
+            <h2 id="hybrid-rec-title" class="rec-title">Tailored For Your Budget</h2>
+            <p class="rec-subtitle">AI-powered hybrid product recommendations matching your grocery profile</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          @if (recommendationStatus !== 'calibrated') {
+          <a mat-flat-button routerLink="/buyer/survey" class="calibrate-survey-btn hover-lift">
+            <mat-icon>tune</mat-icon> Calibrate AI Preferences
+          </a>
+          } @else {
+          <a mat-stroked-button routerLink="/buyer/survey" class="recalibrate-survey-btn hover-lift">
+            <mat-icon>tune</mat-icon> Recalibrate Preferences
+          </a>
+          }
+        </div>
+      </div>
+
+      @if (loadingRecommendations) {
+      <div class="recommendations-loading">
+        <mat-spinner diameter="40" color="primary"></mat-spinner>
+        <p>Running hybrid similarity calculations...</p>
+      </div>
+      } @else if (recommendationStatus !== 'calibrated') {
+      <div class="uncalibrated-promo-box">
+        <div class="promo-glow-back"></div>
+        <mat-icon class="promo-box-icon">auto_awesome</mat-icon>
+        <h3>Calibrate Your AI Grocery Preferences</h3>
+        <p>Unlock highly personalized recommendations, precise budget-matching products, and seller reliability score analysis tailored exactly to your shopping habits.</p>
+        <a mat-flat-button routerLink="/buyer/survey" class="promo-action-btn hover-lift">
+          <mat-icon>tune</mat-icon> Start Calibration Survey
+        </a>
+      </div>
+      } @else if (hybridProducts.length === 0) {
+      <div class="recommendations-empty">
+        <mat-icon class="empty-icon">tune</mat-icon>
+        <p>Your calibrated profile did not yield any matching products. Try adjusting your preferences!</p>
+      </div>
+      } @else {
+      <div class="products-horizontal-grid rec-grid-premium">
+        @for (product of hybridProducts; track product.id) {
+        <article class="product-card rec-card hover-lift" [routerLink]="['/catalog/product', product.id]" style="cursor: pointer;">
+          <span class="category-tag-badge">{{ product.category }}</span>
+          <div class="product-image-container">
+            <img [src]="product.image" [alt]="product.name" class="product-image" loading="lazy" />
+          </div>
+          <div class="product-info">
+            <h3 class="product-name" [title]="product.name">{{ product.name }}</h3>
+            <p class="product-description-excerpt">{{ product.description || 'Premium curated catalog item.' }}</p>
+            <div class="product-rating-row">
+              <span class="star-icon">★</span>
+              <span class="rating-value">{{ product.rating }}</span>
+              <span class="reviews-count">({{ product.reviewsCount }})</span>
+              <span class="seller-reliability-tag">🤝 Score: {{ product.sellerReliability || '4.8' }}</span>
+            </div>
+            <div class="product-price-row">
+              <span class="price-current">{{ formatPrice(product.price) }}</span>
+              <span class="price-original">{{ formatPrice(product.originalPrice) }}</span>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+      }
+    </section>
+    }
+
+  </div>
   }
 </div>

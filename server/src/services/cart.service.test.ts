@@ -27,6 +27,7 @@ jest.mock('../config/database', () => ({
 
 jest.mock('../config/redis', () => ({
   getRedisClient: () => mockRedis,
+  withTimeout: (promise: Promise<any>) => promise,
 }));
 
 describe('SmartCartService', () => {

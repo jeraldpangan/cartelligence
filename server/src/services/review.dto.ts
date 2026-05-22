@@ -18,6 +18,9 @@ export interface ProductReview {
   userId: string;
   rating: number;
   comment: string;
+  isFake?: boolean;
+  fakeProbability?: number;
+  imageVerified?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +39,12 @@ export interface ReviewSummary {
   averageRating: number;
   totalReviews: number;
   ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number>;
+  nlpSummary?: {
+    summaryText: string;
+    productQuality: string;
+    sellerCredibility: string;
+    customerSatisfaction: string;
+  };
 }
 
 /** Validation constants for review fields */

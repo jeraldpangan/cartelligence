@@ -2,67 +2,232 @@
   @if (loading) {
     <div class="product-detail__loading">
       <mat-spinner diameter="40"></mat-spinner>
+      <p>Consulting product databases...</p>
     </div>
   }
 
   @if (error && !loading) {
-    <div class="product-detail__error">
-      <mat-icon>error_outline</mat-icon>
-      <p>Product not found</p>
-      <button mat-stroked-button (click)="goBack()">Back to Catalog</button>
+    <div class="product-detail__error animate-fade-in">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h2>Product Unavailable</h2>
+      <p>This item could not be retrieved from the catalog. It may have been removed or is temporarily offline.</p>
+      <button mat-flat-button color="primary" class="hover-lift" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon> Back to Catalog
+      </button>
     </div>
   }
 
   @if (product && !loading) {
-    <button mat-button class="product-detail__back" (click)="goBack()">
+    <button mat-button class="product-detail__back hover-lift" (click)="goBack()">
       <mat-icon>arrow_back</mat-icon>
-      Back
+      <span>Back to Catalog</span>
     </button>
 
-    <mat-card class="product-detail__card">
+    <!-- Main Glassmorphic Product Card -->
+    <mat-card class="product-detail__card animate-fade-in">
       <mat-card-content class="product-detail__content">
-        <div class="product-detail__header">
-          <h1 class="product-detail__name">{{ product.name }}</h1>
-          <span
-            class="product-detail__stock"
-            [class.product-detail__stock--out]="isOutOfStock()"
-          >
-            {{ isOutOfStock() ? 'Out of Stock' : 'In Stock' }}
-          </span>
+        <div class="product-detail__layout-grid">
+          
+          <!-- Left Column: Premium Category/Product Hero Visual -->
+          <div class="product-detail__visual-col">
+            <div class="product-detail__hero-frame">
+              <div class="product-detail__glow-bg"></div>
+              
+              <!-- Categorized Icon Display for Stunning Aesthetics -->
+              <div class="product-detail__category-art-wrapper">
+                @if (product.category === 'produce') {
+                  <mat-icon class="product-detail__art-icon category-produce">spa</mat-icon>
+                } @else if (product.category === 'dairy') {
+                  <mat-icon class="product-detail__art-icon category-dairy">egg</mat-icon>
+                } @else if (product.category === 'meat') {
+                  <mat-icon class="product-detail__art-icon category-meat">restaurant</mat-icon>
+                } @else if (product.category === 'beverages') {
+                  <mat-icon class="product-detail__art-icon category-beverages">local_cafe</mat-icon>
+                } @else if (product.category === 'snacks') {
+                  <mat-icon class="product-detail__art-icon category-snacks">cookie</mat-icon>
+                } @else if (product.category === 'babies_toys') {
+                  <mat-icon class="product-detail__art-icon category-babies">child_care</mat-icon>
+                } @else {
+                  <mat-icon class="product-detail__art-icon category-default">shopping_bag</mat-icon>
+                }
+              </div>
+
+              <!-- Overlay Badges -->
+              <span class="product-detail__category-badge">{{ product.category | titlecase }}</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Details & Purchase Panel -->
+          <div class="product-detail__info-col">
+            <div class="product-detail__header-row">
+              <h1 class="product-detail__name">{{ product.name }}</h1>
+              
+              <!-- Dynamic Stock Badge -->
+              @if (isOutOfStock()) {
+                <span class="stock-pill stock-pill--out">
+                  <mat-icon class="stock-pill__icon">block</mat-icon> Out of Stock
+                </span>
+              } @else if (isLowStock()) {
+                <span class="stock-pill stock-pill--low">
+                  <mat-icon class="stock-pill__icon">warning</mat-icon> Only {{ product.stockQuantity }} left!
+                </span>
+              } @else {
+                <span class="stock-pill stock-pill--in">
+                  <mat-icon class="stock-pill__icon">check_circle</mat-icon> In Stock ({{ product.stockQuantity }})
+                </span>
+              }
+            </div>
+
+            <!-- Price & Unit -->
+            <div class="product-detail__price-container">
+              <span class="price-value">{{ formatPrice(product.unitPrice) }}</span>
+              <span class="price-unit">per {{ product.unit }}</span>
+            </div>
+
+            <!-- Description -->
+            @if (product.description) {
+              <div class="product-detail__desc-block">
+                <p>{{ product.description }}</p>
+              </div>
+            }
+
+            <!-- 🛒 Buying & Quantity Stepper Controls Section -->
+            <div class="product-detail__purchase-section">
+              @if (!isOutOfStock()) {
+                <div class="purchase-controls">
+                  <!-- Stepper Counter -->
+                  <div class="stepper-wrapper">
+                    <span class="stepper-label">Quantity:</span>
+                    <div class="stepper-buttons-container">
+                      <button 
+                        mat-icon-button 
+                        class="stepper-btn stepper-btn--minus hover-lift" 
+                        (click)="decrementQuantity()" 
+                        [disabled]="quantity <= 1"
+                        aria-label="Decrease quantity"
+                      >
+                        <mat-icon>remove</mat-icon>
+                      </button>
+                      <span class="stepper-value" aria-live="polite">{{ quantity }}</span>
+                      <button 
+                        mat-icon-button 
+                        class="stepper-btn stepper-btn--plus hover-lift" 
+                        (click)="incrementQuantity()" 
+                        [disabled]="quantity >= product.stockQuantity"
+                        aria-label="Increase quantity"
+                      >
+                        <mat-icon>add</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Dynamic Cost Preview (Real-time micro-interaction) -->
+                  <div class="purchase-preview-cost">
+                    <span class="preview-label">Estimated Price:</span>
+                    <span class="preview-amount">{{ formatPrice(product.unitPrice * quantity) }}</span>
+                  </div>
+
+                  <!-- Actions Row -->
+                  <div class="purchase-actions">
+                    <button 
+                      mat-flat-button 
+                      class="buy-now-btn hover-lift" 
+                      (click)="buyNow()"
+                      [disabled]="buyingNow || addingToCart"
+                    >
+                      @if (buyingNow) {
+                        <mat-spinner diameter="20" color="accent" class="inline-spinner"></mat-spinner>
+                        <span>Securing Slot...</span>
+                      } @else {
+                        <mat-icon>bolt</mat-icon>
+                        <span>Buy Now / Checkout</span>
+                      }
+                    </button>
+                    
+                    <button 
+                      mat-stroked-button 
+                      class="add-to-cart-btn hover-lift" 
+                      (click)="addToCart()"
+                      [disabled]="addingToCart || buyingNow"
+                    >
+                      @if (addingToCart) {
+                        <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                        <span>Adding...</span>
+                      } @else {
+                        <mat-icon>shopping_cart</mat-icon>
+                        <span>Add to Cart</span>
+                      }
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="out-of-stock-banner animate-pulse">
+                  <mat-icon>notification_important</mat-icon>
+                  <div class="banner-text">
+                    <h4>Currently Unavailable</h4>
+                    <p>We are coordinating with organic sellers to restock this product. Check back soon!</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Nutritional Section -->
+            @if (product.nutritionalInfo) {
+              <div class="product-detail__nutrition-section">
+                <h3>🥬 Nutritional Composition</h3>
+                <div class="nutrition-badge-box">
+                  <p>{{ product.nutritionalInfo }}</p>
+                </div>
+              </div>
+            }
+
+          </div>
         </div>
-
-        <p class="product-detail__price">{{ formatPrice(product.unitPrice) }}</p>
-        <p class="product-detail__unit">per {{ product.unit }}</p>
-
-        @if (product.description) {
-          <div class="product-detail__section">
-            <h3>Description</h3>
-            <p>{{ product.description }}</p>
-          </div>
-        }
-
-        @if (product.nutritionalInfo) {
-          <div class="product-detail__section">
-            <h3>Nutritional Information</h3>
-            <p>{{ product.nutritionalInfo }}</p>
-          </div>
-        }
-
-        @if (isOutOfStock()) {
-          <p class="product-detail__unavailable-msg">
-            This product is currently unavailable.
-          </p>
-        }
       </mat-card-content>
     </mat-card>
 
+    <!-- 🤝 CUSTOMER REVIEWS & AI SYNTHESIS SECTION -->
+    <section class="reviews-section" aria-labelledby="reviews-section-title">
+      <div class="reviews-section__header">
+        <div class="reviews-title-meta">
+          <h2 id="reviews-section-title" class="section-title">Reviews & Insights</h2>
+          <p class="section-subtitle">Real-time feedback evaluated by our Random Forest & NLP engines</p>
+        </div>
+        <button 
+          mat-flat-button 
+          [color]="showReviewForm ? 'warn' : 'accent'" 
+          class="write-review-toggle-btn hover-lift" 
+          (click)="toggleReviewForm()"
+        >
+          <mat-icon>{{ showReviewForm ? 'close' : 'rate_review' }}</mat-icon>
+          <span>{{ showReviewForm ? 'Cancel Review' : 'Share Your Experience' }}</span>
+        </button>
+      </div>
+
+      <!-- Togglable Glassmorphic Review Form Container -->
+      @if (showReviewForm) {
+        <div class="review-form-container fade-in">
+          <app-product-review-form 
+            [productId]="product.id" 
+            (reviewSubmitted)="onReviewSubmitted()"
+          ></app-product-review-form>
+        </div>
+      }
+
+      <!-- Main Review List and AI Synthesis Cards -->
+      <div class="review-list-wrapper">
+        <app-product-review-list #reviewList [productId]="product.id"></app-product-review-list>
+      </div>
+    </section>
+
+    <!-- RELATED PRODUCTS SECTION -->
     @if (relatedProducts.length > 0) {
-      <div class="product-detail__related">
-        <h2 class="product-detail__related-title">Related Products</h2>
+      <section class="product-detail__related" aria-labelledby="related-title">
+        <h2 id="related-title" class="product-detail__related-title">More in this Segment</h2>
         <div class="product-detail__related-grid">
           @for (related of relatedProducts; track related.id) {
             <mat-card
-              class="product-detail__related-card"
+              class="product-detail__related-card hover-lift"
               [class.product-detail__related-card--unavailable]="!related.isAvailable || related.stockQuantity === 0"
               (click)="onRelatedProductSelect(related)"
               (keydown.enter)="onRelatedProductSelect(related)"
@@ -70,15 +235,22 @@
               role="button"
               [attr.aria-label]="related.name + ' - ' + formatPrice(related.unitPrice)"
             >
-              <mat-card-content>
-                <h4 class="product-detail__related-name">{{ related.name }}</h4>
-                <p class="product-detail__related-price">{{ formatPrice(related.unitPrice) }}</p>
-                <p class="product-detail__related-unit">{{ related.unit }}</p>
+              <mat-card-content class="related-card-content">
+                <div class="related-icon-mini">
+                  <mat-icon>shopping_bag</mat-icon>
+                </div>
+                <div class="related-meta">
+                  <h4 class="product-detail__related-name">{{ related.name }}</h4>
+                  <div class="related-price-row">
+                    <span class="price">{{ formatPrice(related.unitPrice) }}</span>
+                    <span class="unit">/ {{ related.unit }}</span>
+                  </div>
+                </div>
               </mat-card-content>
             </mat-card>
           }
         </div>
-      </div>
+      </section>
     }
   }
 </div>

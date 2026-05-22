@@ -9,6 +9,7 @@ export interface RegisterDto {
     password: string;
     fullName: string;
     deliveryAddress: string;
+    role?: 'buyer' | 'seller';
 }
 /**
  * Login request payload.

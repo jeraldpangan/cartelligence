@@ -15,7 +15,8 @@ export declare enum ProductCategory {
     Beverages = "beverages",
     Snacks = "snacks",
     Household = "household",
-    PersonalCare = "personal_care"
+    PersonalCare = "personal_care",
+    BabiesToys = "babies_toys"
 }
 /**
  * Order lifecycle statuses for tracking delivery progress.

@@ -21,6 +21,7 @@ var ProductCategory;
     ProductCategory["Snacks"] = "snacks";
     ProductCategory["Household"] = "household";
     ProductCategory["PersonalCare"] = "personal_care";
+    ProductCategory["BabiesToys"] = "babies_toys";
 })(ProductCategory || (exports.ProductCategory = ProductCategory = {}));
 /**
  * Order lifecycle statuses for tracking delivery progress.

@@ -3,6 +3,7 @@ import { ProductService } from '../../services/product.service';
 import { AppError } from '../../middleware/errorHandler';
 import { ErrorCode } from '@shared/errors';
 import { ProductCategory } from '@shared/enums';
+import { optionalAuthenticate, AuthenticatedRequest } from '../../middleware/auth';
 import {
   SEARCH_QUERY_MIN_LENGTH,
   SEARCH_QUERY_MAX_LENGTH,
@@ -47,7 +48,8 @@ router.get(
  */
 router.get(
   '/categories/:id/products',
-  async (req: Request, res: Response, next: NextFunction) => {
+  optionalAuthenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const categoryId = String(req.params.id);
 
@@ -67,9 +69,11 @@ router.get(
       }
 
       const page = parseInt(req.query.page as string, 10) || 1;
+      const userId = req.user?.sub;
       const result = await productService.getProductsByCategory(
         categoryId as ProductCategory,
         page,
+        userId,
       );
 
       // Format prices to 2 decimal places
@@ -113,7 +117,8 @@ router.get(
  */
 router.get(
   '/search',
-  async (req: Request, res: Response, next: NextFunction) => {
+  optionalAuthenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const query = (req.query.q as string) || '';
 
@@ -147,7 +152,8 @@ router.get(
       }
 
       const page = parseInt(req.query.page as string, 10) || 1;
-      const result = await productService.searchProducts(query, page);
+      const userId = req.user?.sub;
+      const result = await productService.searchProducts(query, page, userId);
 
       // Format prices to 2 decimal places
       const formattedData = result.data.map((product) => ({

@@ -145,4 +145,125 @@ router.post(
   },
 );
 
+/**
+ * POST /api/v1/recommendations/survey
+ * Saves the user shopping preferences survey (budget, preferred categories).
+ * Requirements: A. Hybrid Recommendation Algorithm
+ */
+router.post(
+  '/survey',
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.sub;
+      const { budget, preferredCategories, browsingHistory } = req.body;
+
+      if (budget == null || isNaN(parseFloat(budget)) || parseFloat(budget) < 0) {
+        return res.status(400).json({ error: 'Valid weekly budget is required' });
+      }
+      if (!Array.isArray(preferredCategories) || preferredCategories.length === 0) {
+        return res.status(400).json({ error: 'At least one preferred category is required' });
+      }
+
+      await recommendationService.saveUserSurvey(
+        userId,
+        parseFloat(budget),
+        preferredCategories,
+        browsingHistory || []
+      );
+
+      return res.status(200).json({
+        data: { message: 'Preferences survey saved successfully' }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/**
+ * GET /api/v1/recommendations/survey
+ * Retrieves the current user preference survey.
+ */
+router.get(
+  '/survey',
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.sub;
+      const survey = await recommendationService.getUserSurvey(userId);
+
+      return res.status(200).json({
+        data: survey
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/**
+ * GET /api/v1/recommendations/hybrid
+ * Computes high-accuracy hybrid recommendations based on survey budget, categories,
+ * similarity, reviews, and seller reliability.
+ * Requirements: A. Hybrid Recommendation Algorithm
+ */
+router.get(
+  '/hybrid',
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.sub;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+      const result = await recommendationService.getHybridRecommendations(userId, limit);
+
+      if (result.products === null) {
+        return res.status(200).json({
+          data: { products: [], status: 'unavailable' }
+        });
+      }
+
+      return res.status(200).json({
+        data: { products: result.products, status: result.status }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/**
+ * POST /api/v1/recommendations/track-click
+ * Tracks a product click/view to update the user's browsing history.
+ * This feeds into the hybrid recommendation algorithm for real-time personalization.
+ * Fire-and-forget pattern — returns immediately and processes asynchronously.
+ * Requirements: A. Hybrid Recommendation Algorithm (Real-time Browsing Signal)
+ */
+router.post(
+  '/track-click',
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.sub;
+      const { productId, category } = req.body;
+
+      if (!productId) {
+        return res.status(400).json({ error: 'productId is required' });
+      }
+
+      // Fire-and-forget: don't await the tracking, respond immediately
+      recommendationService.trackProductClick(userId, productId, category).catch((err) => {
+        console.error('Background click tracking error:', err);
+      });
+
+      return res.status(200).json({
+        data: { message: 'Click tracked' }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default router;
+

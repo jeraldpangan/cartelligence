@@ -112,7 +112,8 @@ describe('SellerOrderService', () => {
   beforeEach(() => {
     pool = createMockPool();
     notificationService = createMockNotificationService();
-    service = new SellerOrderService(pool, notificationService);
+    const mockSellerPerf = { recalculateSellerReliability: jest.fn().mockResolvedValue(undefined) };
+    service = new SellerOrderService(pool, notificationService, mockSellerPerf as any);
   });
 
   // ─── getSellerOrders ────────────────────────────────────────────────────────

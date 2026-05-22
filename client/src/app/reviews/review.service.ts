@@ -12,6 +12,9 @@ export interface ProductReview {
   rating: number;
   comment: string;
   createdAt: string;
+  isFake?: boolean;
+  fakeProbability?: number;
+  imageVerified?: boolean;
 }
 
 /** Review summary aggregation for a product. */
@@ -19,6 +22,12 @@ export interface ReviewSummary {
   averageRating: number;
   totalReviews: number;
   ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number>;
+  nlpSummary?: {
+    summaryText: string;
+    productQuality: string;
+    sellerCredibility: string;
+    customerSatisfaction: string;
+  };
 }
 
 /** DTO for submitting a new review. */

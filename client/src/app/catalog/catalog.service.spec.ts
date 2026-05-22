@@ -25,21 +25,20 @@ describe('CatalogService', () => {
   });
 
   describe('getCategories', () => {
-    it('should return all 7 categories', () => {
+    it('should return all 6 active categories', () => {
       const categories = service.getCategories();
-      expect(categories).toHaveLength(7);
+      expect(categories).toHaveLength(6);
     });
 
-    it('should include all ProductCategory enum values', () => {
+    it('should include all active ProductCategory values', () => {
       const categories = service.getCategories();
       const categoryIds = categories.map((c) => c.id);
       expect(categoryIds).toContain(ProductCategory.Produce);
       expect(categoryIds).toContain(ProductCategory.Dairy);
       expect(categoryIds).toContain(ProductCategory.Meat);
-      expect(categoryIds).toContain(ProductCategory.Beverages);
       expect(categoryIds).toContain(ProductCategory.Snacks);
-      expect(categoryIds).toContain(ProductCategory.Household);
       expect(categoryIds).toContain(ProductCategory.PersonalCare);
+      expect(categoryIds).toContain(ProductCategory.BabiesToys);
     });
 
     it('should have name and icon for each category', () => {

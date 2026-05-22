@@ -5,6 +5,7 @@ import { OrderStatus } from '@shared/enums';
 import { ErrorCode } from '@shared/errors';
 import { AppError } from '../middleware/errorHandler';
 import { OrderNotificationService } from './order-notification.service';
+import { SellerPerformanceService } from './seller-performance.service';
 
 /** Number of orders per page for seller order listings */
 const SELLER_ORDERS_PER_PAGE = 20;
@@ -48,10 +49,17 @@ export interface WsServer {
 export class SellerOrderService {
   private pool: Pool;
   private notificationService: OrderNotificationService | null;
+  private sellerPerformanceService: SellerPerformanceService;
 
-  constructor(pool?: Pool, notificationService?: OrderNotificationService | null) {
+  constructor(
+    pool?: Pool,
+    notificationService?: OrderNotificationService | null,
+    sellerPerformanceService?: SellerPerformanceService,
+  ) {
     this.pool = pool || getDatabasePool();
     this.notificationService = notificationService ?? null;
+    this.sellerPerformanceService =
+      sellerPerformanceService || new SellerPerformanceService(this.pool);
   }
 
   /**
@@ -220,6 +228,13 @@ export class SellerOrderService {
         orderId,
         status: newStatus,
         updatedAt: new Date().toISOString(),
+      });
+    }
+
+    // Reactively trigger seller reliability recalculation on terminal states
+    if (newStatus === OrderStatus.Delivered || newStatus === OrderStatus.Cancelled) {
+      this.sellerPerformanceService.recalculateSellerReliability(sellerId).catch((err) => {
+        console.error('[SellerOrderService] Failed to trigger seller reliability recalculation:', err);
       });
     }
 

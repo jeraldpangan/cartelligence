@@ -7,7 +7,7 @@ export interface CheckoutSummary {
   cart: Cart;
   costBreakdown: CostBreakdown;
   deliveryAddress: string;
-  paymentMethods: PaymentMethodOption[];
+  paymentMethods: string[];
 }
 
 export interface PaymentMethodOption {

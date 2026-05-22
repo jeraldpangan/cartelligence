@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { getDatabasePool } from '../config/database';
 import { OrderStatus, ProductCategory } from '@shared/enums';
+import { RecommendationService } from './recommendation.service';
 
 export interface ChatBotMessage {
   role: 'user' | 'model';
@@ -87,7 +88,7 @@ Return your response strictly in JSON format matching this schema:
 
             // Route based on Gemini's classified intent
             if (intent === 'product_search') {
-              const dbResult = await this.handleProductSearch(keyword || userMessage);
+              const dbResult = await this.handleProductSearch(keyword || userMessage, userId);
               return {
                 message: `${reply}\n\n${dbResult.message}`,
                 products: dbResult.products
@@ -146,7 +147,7 @@ Return your response strictly in JSON format matching this schema:
       text.includes('latest') ||
       this.containsProductKeywords(text)
     ) {
-      return this.handleProductSearch(text);
+      return this.handleProductSearch(text, userId);
     }
 
     // 3. Flash Sale & Voucher/Coupon Queries
@@ -255,11 +256,40 @@ Return your response strictly in JSON format matching this schema:
   /**
    * Searches the database for matching products and formats recommendation cards.
    */
-  private async handleProductSearch(query: string): Promise<ChatBotResponse> {
+  private async handleProductSearch(query: string, userId?: string): Promise<ChatBotResponse> {
     try {
       const lowerQuery = query.toLowerCase();
+      const isRecommend = lowerQuery.includes('recommend') || lowerQuery.includes('suggest') || lowerQuery.includes('for me');
       const isOldestSelected = lowerQuery.includes('oldest') || lowerQuery.includes('old');
       const isNewestSelected = lowerQuery.includes('newest') || lowerQuery.includes('new') || lowerQuery.includes('latest');
+
+      // Use Hybrid Recommendation if user is authenticated and queries for recommendations/suggestions
+      if (userId && (isRecommend || query === 'organic' || query === 'snacks')) {
+        const recService = new RecommendationService(this.pool);
+        const survey = await recService.getUserSurvey(userId);
+        const hybridRes = await recService.getHybridRecommendations(userId, 4);
+
+        if (hybridRes.products && hybridRes.products.length > 0) {
+          const budgetMsg = survey 
+            ? `tailored perfectly to your survey weekly budget of **$${survey.budget}** and preferences 🛒`
+            : `curated based on our premium popular grocery arrivals 🌟`;
+
+          const products = hybridRes.products.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            unitPrice: p.unitPrice,
+            unit: p.unit,
+            description: p.description,
+            stockQuantity: p.stockQuantity
+          }));
+
+          return {
+            message: `I have compiled these high-accuracy hybrid recommendations for you, ${budgetMsg}:`,
+            products
+          };
+        }
+      }
 
       if (isOldestSelected || isNewestSelected) {
         // Query the newest 10 products globally

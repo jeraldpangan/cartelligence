@@ -96,19 +96,19 @@ describe('OrderService', () => {
       });
     });
 
-    it('should return checkout summary with items, totals, address, and payment options', async () => {
+    it('should return checkout summary with cart, totals, address, and payment methods', async () => {
       const result = await service.initiateCheckout(userId);
 
-      expect(result.items).toHaveLength(2);
-      expect(result.items[0].productId).toBe('prod-1');
-      expect(result.items[0].productName).toBe('Apples');
-      expect(result.items[0].unitPrice).toBe(50.0);
-      expect(result.items[0].quantity).toBe(3);
-      expect(result.items[0].subtotal).toBe(150.0);
+      expect(result.cart.items).toHaveLength(2);
+      expect(result.cart.items[0].productId).toBe('prod-1');
+      expect(result.cart.items[0].productName).toBe('Apples');
+      expect(result.cart.items[0].unitPrice).toBe(50.0);
+      expect(result.cart.items[0].quantity).toBe(3);
+      expect(result.cart.items[0].subtotal).toBe(150.0);
       expect(result.costBreakdown).toEqual(sampleCostBreakdown);
       expect(result.deliveryAddress).toBe('123 Main St, Olongapo City');
-      expect(result.paymentOptions).toContain('credit_debit_card');
-      expect(result.paymentOptions).toContain('digital_wallet');
+      expect(result.paymentMethods).toContain('credit_debit_card');
+      expect(result.paymentMethods).toContain('digital_wallet');
     });
 
     it('should throw 400 error when cart is empty', async () => {

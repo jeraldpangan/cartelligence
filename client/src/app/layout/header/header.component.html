@@ -1,38 +1,32 @@
-
 <mat-toolbar class="header-toolbar" role="banner">
   <!-- Logo Section -->
   <a [routerLink]="isSeller ? '/seller' : '/catalog'" class="brand-link" aria-label="Cartelligence Home">
     <div class="logo-wrapper">
       @if (logoFailed()) {
-        <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
-          <!-- Wheels -->
-          <circle cx="35" cy="85" r="8" fill="#166fe5" />
-          <circle cx="75" cy="85" r="8" fill="#166fe5" />
-          <circle cx="35" cy="85" r="4" fill="#ffffff" />
-          <circle cx="75" cy="85" r="4" fill="#ffffff" />
-          <!-- Cart Legs/Stands -->
-          <path d="M30 65L35 77M70 65L75 77" stroke="#166fe5" stroke-width="4" stroke-linecap="round"/>
-          <!-- Cart Basket Outline -->
-          <rect x="20" y="25" width="60" height="40" rx="10" fill="#e1eeff" stroke="#166fe5" stroke-width="4"/>
-          <!-- Handle -->
-          <path d="M15 32H20M15 32L10 20M10 20H2" stroke="#166fe5" stroke-width="4" stroke-linecap="round"/>
-          <!-- Glasses -->
-          <circle cx="40" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff"/>
-          <circle cx="60" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff"/>
-          <path d="M50 42H52" stroke="#166fe5" stroke-width="4"/>
-          <!-- Happy Eyes (arcs) -->
-          <path d="M37 42C37 40 43 40 43 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round"/>
-          <path d="M57 42C57 40 63 40 63 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round"/>
-          <!-- Smile -->
-          <path d="M44 54C44 58 56 58 56 54" stroke="#166fe5" stroke-width="3" stroke-linecap="round"/>
-        </svg>
+      <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+        <!-- Wheels -->
+        <circle cx="35" cy="85" r="8" fill="#166fe5" />
+        <circle cx="75" cy="85" r="8" fill="#166fe5" />
+        <circle cx="35" cy="85" r="4" fill="#ffffff" />
+        <circle cx="75" cy="85" r="4" fill="#ffffff" />
+        <!-- Cart Legs/Stands -->
+        <path d="M30 65L35 77M70 65L75 77" stroke="#166fe5" stroke-width="4" stroke-linecap="round" />
+        <!-- Cart Basket Outline -->
+        <rect x="20" y="25" width="60" height="40" rx="10" fill="#e1eeff" stroke="#166fe5" stroke-width="4" />
+        <!-- Handle -->
+        <path d="M15 32H20M15 32L10 20M10 20H2" stroke="#166fe5" stroke-width="4" stroke-linecap="round" />
+        <!-- Glasses -->
+        <circle cx="40" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff" />
+        <circle cx="60" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff" />
+        <path d="M50 42H52" stroke="#166fe5" stroke-width="4" />
+        <!-- Happy Eyes (arcs) -->
+        <path d="M37 42C37 40 43 40 43 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round" />
+        <path d="M57 42C57 40 63 40 63 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round" />
+        <!-- Smile -->
+        <path d="M44 54C44 58 56 58 56 54" stroke="#166fe5" stroke-width="3" stroke-linecap="round" />
+      </svg>
       } @else {
-        <img
-          src="/logo.png"
-          alt="Cartelligence Logo"
-          class="logo-img"
-          (error)="logoFailed.set(true)"
-        />
+      <img src="/logo.png" alt="Cartelligence Logo" class="logo-img" (error)="logoFailed.set(true)" />
       }
       <span class="brand-name">Cartelligence</span>
     </div>
@@ -40,24 +34,19 @@
 
   <!-- Seller navigation (Preserved for full functionality) -->
   @if (isSeller) {
-    <nav class="nav-links seller-nav" aria-label="Seller navigation">
-      <a mat-button routerLink="/seller" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-      <a mat-button routerLink="/seller/products" routerLinkActive="active-link">Products</a>
-      <a mat-button routerLink="/seller/orders" routerLinkActive="active-link">Orders</a>
-    </nav>
+  <nav class="nav-links seller-nav" aria-label="Seller navigation">
+    <a mat-button routerLink="/seller" routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+    <a mat-button routerLink="/seller/products" routerLinkActive="active-link">Products</a>
+    <a mat-button routerLink="/seller/orders" routerLinkActive="active-link">Orders</a>
+  </nav>
   }
 
   <!-- Integrated Global Search Bar -->
   <div class="header-search-container">
     <div class="search-input-wrapper">
-      <input
-        type="text"
-        [formControl]="searchControl"
-        (keydown.enter)="triggerSearch()"
-        placeholder="Search in Cartelligence..."
-        class="header-search-input"
-        aria-label="Search in Cartelligence"
-      />
+      <input type="text" [formControl]="searchControl" (keydown.enter)="triggerSearch()"
+        placeholder="Search in Cartelligence..." class="header-search-input" aria-label="Search in Cartelligence" />
       <button class="header-search-button" (click)="triggerSearch()" aria-label="Search">
         <mat-icon>search</mat-icon>
       </button>
@@ -68,21 +57,16 @@
 
   <!-- Right Controls -->
   <div class="right-controls">
-    <!-- Chatbot Button -->
-    <button mat-icon-button class="chatbot-button" aria-label="Chatbot Assistant" matTooltip="Cartelligence AI Assistant" (click)="toggleChat()">
-      <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="chatbot-mascot-icon" />
-    </button>
-
     <!-- Cart icon (buyers only) -->
     @if (isBuyer) {
-      <a routerLink="/cart" class="cart-icon-link" aria-label="Shopping cart">
-        <div class="cart-badge-wrapper">
-          <mat-icon class="header-cart-icon">shopping_cart</mat-icon>
-          @if (cartItemCount() > 0) {
-            <span class="header-cart-badge">{{ cartItemCount() }}</span>
-          }
-        </div>
-      </a>
+    <a routerLink="/cart" class="cart-icon-link" aria-label="Shopping cart">
+      <div class="cart-badge-wrapper">
+        <mat-icon class="header-cart-icon">shopping_cart</mat-icon>
+        @if (cartItemCount() > 0) {
+        <span class="header-cart-badge">{{ cartItemCount() }}</span>
+        }
+      </div>
+    </a>
     }
 
     <!-- Profile Icon -->
@@ -99,255 +83,294 @@
 
 <!-- Chatelligence Modal Overlay Container -->
 @if (isChatOpen()) {
-  <div class="chatelligence-backdrop" (click)="toggleChat()">
-    <div class="chatelligence-modal" (click)="$event.stopPropagation()">
-      
-      <!-- Top Modal Header -->
-      <div class="chat-modal-header">
-        <div class="chat-brand-info">
-          <div class="brand-avatar">
-            <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="brand-mascot-icon" />
-            <span class="online-status-indicator animate-pulse"></span>
-          </div>
-          <div class="brand-text-block">
-            <h3 class="brand-title">Chatelligence</h3>
-            <p class="brand-subtitle">AI Shopping Specialist • Online</p>
-          </div>
-        </div>
+<div class="chatelligence-backdrop" (click)="toggleChat()">
+  <div class="chatelligence-modal" (click)="$event.stopPropagation()">
 
-        <!-- Middle Badge Pill -->
-        <div class="shopping-assistant-badge">
-          <span class="badge-green-dot animate-ping"></span>
-          <span class="badge-green-dot"></span>
-          <span>Shopping Assistant</span>
+    <!-- Top Modal Header -->
+    <div class="chat-modal-header">
+      <div class="chat-brand-info">
+        <div class="brand-avatar">
+          <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="brand-mascot-icon" />
+          <span class="online-status-indicator animate-pulse"></span>
         </div>
-
-        <!-- Right Header Buttons -->
-        <div class="header-control-buttons">
-          <button mat-icon-button class="header-settings-btn" aria-label="Settings">
-            <mat-icon>settings</mat-icon>
-          </button>
-          <button mat-icon-button class="header-close-btn" (click)="toggleChat()" aria-label="Close Chat">
-            <mat-icon>close</mat-icon>
-          </button>
+        <div class="brand-text-block">
+          <h3 class="brand-title">Chatelligence</h3>
+          <p class="brand-subtitle">AI Shopping Specialist • Online</p>
         </div>
       </div>
 
-      <!-- Split Dual-Pane Body -->
-      <div class="chatelligence-split-body">
-        
-        <!-- Left Sidebar Navigation -->
-        <div class="chat-sidebar">
-          <div class="sidebar-section-label">NAVIGATION</div>
-          
-          <button class="sidebar-nav-item" [class.active]="activeTab() === 'assistant'" (click)="activeTab.set('assistant')">
-            <img src="/chatelligence-mascot.png" alt="Shopping Assistant" class="nav-icon mascot-nav-icon" />
-            <span>Shopping Assistant</span>
-          </button>
+      <!-- Middle Badge Pill -->
+      <div class="shopping-assistant-badge">
+        <span class="badge-green-dot animate-ping"></span>
+        <span class="badge-green-dot"></span>
+        <span>Shopping Assistant</span>
+      </div>
 
-          <button class="sidebar-nav-item" [class.active]="activeTab() === 'review'" (click)="activeTab.set('review')">
-            <mat-icon class="nav-icon">sell</mat-icon>
-            <span>Fake Review Checker</span>
-          </button>
+      <!-- Right Header Buttons -->
+      <div class="header-control-buttons">
+        @if (isBuyer && recommendationStatus() === 'calibrated' && chatView() !== 'survey') {
+        <button mat-stroked-button (click)="chatView.set('survey')" class="recalibrate-header-btn">
+          <mat-icon>tune</mat-icon> Recalibrate AI
+        </button>
+        }
+        <button mat-icon-button class="header-settings-btn" aria-label="Settings">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button mat-icon-button class="header-close-btn" (click)="toggleChat()" aria-label="Close Chat">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
 
-          <div class="sidebar-spacer"></div>
+    <!-- Split Dual-Pane Body / Uncalibrated Promo / Survey Modal View -->
+    @if (chatView() === 'promo') {
+    <div class="chatelligence-promo-body fade-in">
+      <div class="uncalibrated-promo-box">
+        <div class="promo-glow-back"></div>
+        <mat-icon class="promo-box-icon">model_training</mat-icon>
+        <h3>Unleash Personalization</h3>
+        <p>Configure your weekly grocery budget limits and premium food categories so our AI algorithm can blend seller
+          reliability, review sentiment, and past shopping clicks into a custom dashboard just for you.</p>
+        <button mat-flat-button (click)="chatView.set('survey')" class="promo-action-btn hover-lift">
+          <mat-icon>auto_awesome</mat-icon> Take AI Calibration Survey
+        </button>
+      </div>
+    </div>
+    } @else if (chatView() === 'survey') {
+    <div class="chatelligence-survey-body fade-in">
+      <app-user-survey [isEmbedded]="true" (surveySaved)="onSurveySaved()" (surveyCancelled)="onSurveyCancelled()"></app-user-survey>
+    </div>
+    } @else {
+    <div class="chatelligence-split-body">
 
-          <button class="sidebar-nav-item bottom-nav-item" (click)="selectQuickChip('Show flash sale details')">
-            <mat-icon class="nav-icon">local_offer</mat-icon>
-            <span>Your Vouchers</span>
-          </button>
+      <!-- Left Sidebar Navigation -->
+      <div class="chat-sidebar">
+        <div class="sidebar-section-label">NAVIGATION</div>
 
-          <button class="sidebar-nav-item bottom-nav-item" (click)="selectQuickChip('Recommend products')">
-            <mat-icon class="nav-icon">bookmark_border</mat-icon>
-            <span>Saved Searches</span>
-          </button>
-        </div>
+        <button class="sidebar-nav-item" [class.active]="activeTab() === 'assistant'"
+          (click)="activeTab.set('assistant')">
+          <img src="/chatelligence-mascot.png" alt="Shopping Assistant" class="nav-icon mascot-nav-icon" />
+          <span>Shopping Assistant</span>
+        </button>
 
-        <!-- Right Main Chat Pane -->
-        <div class="chat-main-pane">
-          @if (activeTab() === 'assistant') {
-            <!-- Chat Scrollable Body -->
-            <div class="chat-messages-container">
-              @for (msg of messages(); track msg; let last = $last) {
-                <div class="message-row" [class.user-row]="msg.role === 'user'">
-                  @if (msg.role !== 'user') {
-                    <div class="bot-avatar-wrapper">
-                      <div class="bot-avatar-circle">
-                        <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="bot-mascot-avatar" />
-                        <span class="bot-online-indicator"></span>
-                      </div>
-                    </div>
-                  }
+        <button class="sidebar-nav-item" [class.active]="activeTab() === 'review'" (click)="activeTab.set('review')">
+          <mat-icon class="nav-icon">sell</mat-icon>
+          <span>Fake Review Checker</span>
+        </button>
 
-                  <div class="message-bubble" [class.user-bubble]="msg.role === 'user'">
-                    <div class="message-text" [innerHTML]="msg.parts"></div>
+        @if (isBuyer && recommendationStatus() === 'calibrated') {
+        <button (click)="chatView.set('survey')" class="sidebar-nav-item recalibrate-sidebar-btn">
+          <mat-icon class="nav-icon text-indigo">tune</mat-icon>
+          <span>Recalibrate AI</span>
+        </button>
+        }
 
-                    <!-- Interactive Style Chips (Shown only if Bot asks about style) -->
-                    @if (msg.role !== 'user' && last && (msg.parts.includes('style or requirement') || msg.parts.includes('Minimalist'))) {
-                      <div class="chat-interactive-chips">
-                        @for (style of ['Minimalist', 'High Performance', 'Eco-friendly', 'Portable', 'Pro-Grade']; track style) {
-                          <button class="interactive-chip" 
-                                  [class.active]="selectedStyle() === style"
-                                  (click)="selectStyle(style)">
-                            {{ style }}
-                          </button>
-                        }
-                      </div>
-                    }
+        <div class="sidebar-spacer"></div>
 
-                    <!-- Interactive Budget Pillars (Shown only if Bot asks about budget range) -->
-                    @if (msg.role !== 'user' && last && (msg.parts.includes('budget range') || msg.parts.includes('Under ₱100') || msg.parts.includes('₱100 - ₱500'))) {
-                      <div class="chat-budget-pillars">
-                        <button class="budget-pillar-card" 
-                                [class.active]="selectedBudget() === 'Under ₱100'"
-                                (click)="selectBudget('Under ₱100')">
-                          <span class="pillar-label">BUDGET</span>
-                          <span class="pillar-value">Under ₱100</span>
-                        </button>
-                        <button class="budget-pillar-card" 
-                                [class.active]="selectedBudget() === '₱100 - ₱500'"
-                                (click)="selectBudget('₱100 - ₱500')">
-                          <span class="pillar-label">BUDGET</span>
-                          <span class="pillar-value">₱100 - ₱500</span>
-                        </button>
-                        <button class="budget-pillar-card" 
-                                [class.active]="selectedBudget() === '₱500+'"
-                                (click)="selectBudget('₱500+')">
-                          <span class="pillar-label">BUDGET</span>
-                          <span class="pillar-value">₱500+</span>
-                        </button>
-                      </div>
-                    }
+        <button class="sidebar-nav-item bottom-nav-item" (click)="selectQuickChip('Show flash sale details')">
+          <mat-icon class="nav-icon">local_offer</mat-icon>
+          <span>Your Vouchers</span>
+        </button>
 
-                    <!-- Structured Orders List -->
-                    @if (msg.orders && msg.orders.length > 0) {
-                      <div class="orders-list">
-                        @for (order of msg.orders; track order.id) {
-                          <div class="order-chat-card">
-                            <div class="order-card-header">
-                              <span class="order-num">#{{ order.orderNumber }}</span>
-                              <span class="order-date">{{ formatDate(order.createdAt) }}</span>
-                            </div>
-                            <div class="order-card-body">
-                              <div class="order-total">Total: <strong>{{ formatPrice(order.grandTotal) }}</strong></div>
-                              <div class="order-statuses">
-                                <span class="status-badge" [class]="'badge-' + order.orderStatus">
-                                  {{ formatStatus(order.orderStatus) }}
-                                </span>
-                                @if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered') {
-                                  <span class="status-badge" [class]="'badge-' + order.deliveryStatus">
-                                    Delivery: {{ formatStatus(order.deliveryStatus) }}
-                                  </span>
-                                }
-                              </div>
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    }
+        <button class="sidebar-nav-item bottom-nav-item" (click)="selectQuickChip('Recommend products')">
+          <mat-icon class="nav-icon">bookmark_border</mat-icon>
+          <span>Saved Searches</span>
+        </button>
+      </div>
 
-                    <!-- Structured Product Recommendations List -->
-                    @if (msg.products && msg.products.length > 0) {
-                      <div class="products-carousel">
-                        @for (prod of msg.products; track prod.id) {
-                          <div class="product-chat-card">
-                            <div class="prod-badge">{{ prod.category }}</div>
-                            <h4 class="prod-title" [title]="prod.name">{{ prod.name }}</h4>
-                            <div class="prod-price">{{ formatPrice(prod.unitPrice) }} <span class="prod-unit">/ {{ prod.unit }}</span></div>
-                            
-                            <button class="prod-add-btn" 
-                                    [disabled]="prod.adding || prod.stockQuantity <= 0 || prod.added"
-                                    (click)="addToCartFromChat(prod)">
-                              @if (prod.adding) {
-                                <span>Adding...</span>
-                              } @else if (prod.added) {
-                                <span>Added! ✓</span>
-                              } @else if (prod.stockQuantity <= 0) {
-                                <span>Out of Stock</span>
-                              } @else {
-                                <span>Add to Cart</span>
-                              }
-                            </button>
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
+      <!-- Right Main Chat Pane -->
+      <div class="chat-main-pane">
+        @if (activeTab() === 'assistant') {
+        <!-- Chat Scrollable Body -->
+        <div class="chat-messages-container">
+          @for (msg of messages(); track msg; let last = $last) {
+          <div class="message-row" [class.user-row]="msg.role === 'user'">
+            @if (msg.role !== 'user') {
+            <div class="bot-avatar-wrapper">
+              <div class="bot-avatar-circle">
+                <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="bot-mascot-avatar" />
+                <span class="bot-online-indicator"></span>
+              </div>
+            </div>
+            }
+
+            <div class="message-bubble" [class.user-bubble]="msg.role === 'user'">
+              <div class="message-text" [innerHTML]="msg.parts"></div>
+
+              <!-- Interactive Style Chips (Shown only if Bot asks about style) -->
+              @if (msg.role !== 'user' && last && (msg.parts.includes('style or requirement') ||
+              msg.parts.includes('Minimalist'))) {
+              <div class="chat-interactive-chips">
+                @for (style of ['Minimalist', 'High Performance', 'Eco-friendly', 'Portable', 'Pro-Grade']; track style)
+                {
+                <button class="interactive-chip" [class.active]="selectedStyle() === style"
+                  (click)="selectStyle(style)">
+                  {{ style }}
+                </button>
+                }
+              </div>
               }
 
-              <!-- Typing Loader -->
-              @if (isLoading()) {
-                <div class="message-row">
-                  <div class="bot-avatar-wrapper">
-                    <div class="bot-avatar-circle">
-                      <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="bot-mascot-avatar" />
-                    </div>
-                  </div>
-                  <div class="message-bubble typing-bubble">
-                    <div class="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-
-            <!-- Quick Suggestion Chips Bar -->
-            <div class="chat-quick-chips">
-              <button class="chip-btn" (click)="selectQuickChip('Recommend products')">
-                <mat-icon class="chip-icon">lightbulb</mat-icon> Recommend
-              </button>
-              <button class="chip-btn" (click)="selectQuickChip('Track my active orders')">
-                <mat-icon class="chip-icon">local_shipping</mat-icon> Track Orders
-              </button>
-              <button class="chip-btn" (click)="selectQuickChip('Show flash sale details')">
-                <mat-icon class="chip-icon">flash_on</mat-icon> Flash Sale
-              </button>
-            </div>
-
-            <!-- Modal Bottom Chat Footer Input -->
-            <div class="chat-input-wrapper">
-              <button class="chat-attach-btn" aria-label="Attach File">
-                <mat-icon>attachment</mat-icon>
-              </button>
-              <div class="chat-input-box-container">
-                <input
-                  type="text"
-                  [formControl]="chatControl"
-                  (keydown.enter)="sendMessage()"
-                  placeholder="Type your response here..."
-                  class="chat-textbox"
-                />
-                <button class="chat-mic-btn" aria-label="Voice Input">
-                  <mat-icon>mic</mat-icon>
+              <!-- Interactive Budget Pillars (Shown only if Bot asks about budget range) -->
+              @if (msg.role !== 'user' && last && (msg.parts.includes('budget range') || msg.parts.includes('Under
+              ₱100') || msg.parts.includes('₱100 - ₱500'))) {
+              <div class="chat-budget-pillars">
+                <button class="budget-pillar-card" [class.active]="selectedBudget() === 'Under ₱100'"
+                  (click)="selectBudget('Under ₱100')">
+                  <span class="pillar-label">BUDGET</span>
+                  <span class="pillar-value">Under ₱100</span>
+                </button>
+                <button class="budget-pillar-card" [class.active]="selectedBudget() === '₱100 - ₱500'"
+                  (click)="selectBudget('₱100 - ₱500')">
+                  <span class="pillar-label">BUDGET</span>
+                  <span class="pillar-value">₱100 - ₱500</span>
+                </button>
+                <button class="budget-pillar-card" [class.active]="selectedBudget() === '₱500+'"
+                  (click)="selectBudget('₱500+')">
+                  <span class="pillar-label">BUDGET</span>
+                  <span class="pillar-value">₱500+</span>
                 </button>
               </div>
-              <button class="chat-send-btn" (click)="sendMessage()" [disabled]="!chatControl.value?.trim()" aria-label="Send Message">
-                <mat-icon>send</mat-icon>
-              </button>
+              }
+
+              <!-- Structured Orders List -->
+              @if (msg.orders && msg.orders.length > 0) {
+              <div class="orders-list">
+                @for (order of msg.orders; track order.id) {
+                <div class="order-chat-card">
+                  <div class="order-card-header">
+                    <span class="order-num">#{{ order.orderNumber }}</span>
+                    <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+                  </div>
+                  <div class="order-card-body">
+                    <div class="order-total">Total: <strong>{{ formatPrice(order.grandTotal) }}</strong></div>
+                    <div class="order-statuses">
+                      <span class="status-badge" [class]="'badge-' + order.orderStatus">
+                        {{ formatStatus(order.orderStatus) }}
+                      </span>
+                      @if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered') {
+                      <span class="status-badge" [class]="'badge-' + order.deliveryStatus">
+                        Delivery: {{ formatStatus(order.deliveryStatus) }}
+                      </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                }
+              </div>
+              }
+
+              <!-- Structured Product Recommendations List -->
+              @if (msg.products && msg.products.length > 0) {
+              <div class="products-carousel">
+                @for (prod of msg.products; track prod.id) {
+                <div class="product-chat-card">
+                  <div class="prod-badge">{{ prod.category }}</div>
+                  <h4 class="prod-title" [title]="prod.name">{{ prod.name }}</h4>
+                  <div class="prod-price">{{ formatPrice(prod.unitPrice) }} <span class="prod-unit">/ {{ prod.unit
+                      }}</span></div>
+
+                  <button class="prod-add-btn" [disabled]="prod.adding || prod.stockQuantity <= 0 || prod.added"
+                    (click)="addToCartFromChat(prod)">
+                    @if (prod.adding) {
+                    <span>Adding...</span>
+                    } @else if (prod.added) {
+                    <span>Added! ✓</span>
+                    } @else if (prod.stockQuantity <= 0) { <span>Out of Stock</span>
+                      } @else {
+                      <span>Add to Cart</span>
+                      }
+                  </button>
+                </div>
+                }
+              </div>
+              }
             </div>
-          } @else {
-            <!-- Fake Review Checker View Section -->
-            <div class="review-checker-container">
-              <div class="review-checker-card">
-                <mat-icon class="checker-icon">verified_user</mat-icon>
-                <h3>Fake Review Checker</h3>
-                <p class="checker-description">
-                  Our advanced AI engine analyzes review text syntax, submission timestamps, and user patterns to detect automated spam or artificial sentiment in real-time.
-                </p>
-                <div class="checker-status-badge">COMING SOON IN CARTELLIGENCE PRO</div>
+          </div>
+          }
+
+          <!-- Typing Loader -->
+          @if (isLoading()) {
+          <div class="message-row">
+            <div class="bot-avatar-wrapper">
+              <div class="bot-avatar-circle">
+                <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="bot-mascot-avatar" />
               </div>
             </div>
+            <div class="message-bubble typing-bubble">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
           }
         </div>
-      </div>
 
+        <!-- Quick Suggestion Chips Bar -->
+        <div class="chat-quick-chips">
+          <button class="chip-btn" (click)="selectQuickChip('Recommend products')">
+            <mat-icon class="chip-icon">lightbulb</mat-icon> Recommend
+          </button>
+          <button class="chip-btn" (click)="selectQuickChip('Track my active orders')">
+            <mat-icon class="chip-icon">local_shipping</mat-icon> Track Orders
+          </button>
+          <button class="chip-btn" (click)="selectQuickChip('Show flash sale details')">
+            <mat-icon class="chip-icon">flash_on</mat-icon> Flash Sale
+          </button>
+        </div>
+
+        <!-- Modal Bottom Chat Footer Input -->
+        <div class="chat-input-wrapper">
+          <button class="chat-attach-btn" aria-label="Attach File">
+            <mat-icon>attachment</mat-icon>
+          </button>
+          <div class="chat-input-box-container">
+            <input type="text" [formControl]="chatControl" (keydown.enter)="sendMessage()"
+              placeholder="Type your response here..." class="chat-textbox" />
+            <button class="chat-mic-btn" aria-label="Voice Input">
+              <mat-icon>mic</mat-icon>
+            </button>
+          </div>
+          <button class="chat-send-btn" (click)="sendMessage()" [disabled]="!chatControl.value?.trim()"
+            aria-label="Send Message">
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
+        } @else {
+        <!-- Fake Review Checker View Section -->
+        <div class="review-checker-container">
+          <div class="review-checker-card">
+            <mat-icon class="checker-icon">verified_user</mat-icon>
+            <h3>Fake Review Checker</h3>
+            <p class="checker-description">
+              Our advanced AI engine analyzes review text syntax, submission timestamps, and user patterns to detect
+              automated spam or artificial sentiment in real-time.
+            </p>
+            <div class="checker-status-badge">COMING SOON IN CARTELLIGENCE PRO</div>
+          </div>
+        </div>
+        }
+      </div>
     </div>
+    }
+
   </div>
+</div>
 }
 
-
-
+<!-- Floating Chatbot Action Circle -->
+@if (!isChatOpen()) {
+<button class="chatbot-floating-trigger" (click)="toggleChat()" aria-label="Open Chatbot Assistant">
+  <div class="pulse-rings">
+    <span class="ring ring-1"></span>
+    <span class="ring ring-2"></span>
+  </div>
+  <div class="trigger-avatar">
+    <img src="/chatelligence-mascot.png" alt="Chatelligence Mascot" class="trigger-mascot-icon" />
+    <span class="online-dot"></span>
+  </div>
+  <span class="tooltip-preview">Chat with AI</span>
+</button>
+}

@@ -101,6 +101,54 @@ export function authenticate(
 }
 
 /**
+ * Optional JWT authentication middleware for routes that support
+ * personalization but do not require login.
+ *
+ * Behaviour:
+ * - If a valid Bearer token is present, decodes it and attaches req.user.
+ * - If no token or an invalid/expired token is provided, proceeds silently
+ *   (req.user remains undefined) without throwing errors.
+ *
+ * Use this on public endpoints (search, category listing) where logged-in
+ * users receive personalised results but guests still get standard results.
+ */
+export function optionalAuthenticate(
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction,
+): void {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // No token — proceed as guest
+    return next();
+  }
+
+  const token = authHeader.slice(7);
+  if (!token) {
+    return next();
+  }
+
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    // Can't verify without secret — proceed as guest
+    return next();
+  }
+
+  try {
+    const payload = jwt.verify(token, secret) as AuthPayload;
+
+    if (payload.type === 'access') {
+      req.user = payload;
+    }
+  } catch {
+    // Token invalid/expired — proceed as guest (req.user stays undefined)
+  }
+
+  next();
+}
+
+/**
  * Role-based authorization middleware.
  * Checks that the authenticated user's role is in the list of allowed roles.
  * Must be used after authenticate() middleware.

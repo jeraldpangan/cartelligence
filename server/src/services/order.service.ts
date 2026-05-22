@@ -17,16 +17,10 @@ const MAX_PAYMENT_RETRIES = 3;
  * Checkout summary returned when a user initiates checkout.
  */
 export interface CheckoutSummary {
-  items: {
-    productId: string;
-    productName: string;
-    unitPrice: number;
-    quantity: number;
-    subtotal: number;
-  }[];
+  cart: Cart;
   costBreakdown: CostBreakdown;
   deliveryAddress: string;
-  paymentOptions: string[];
+  paymentMethods: string[];
 }
 
 /**
@@ -132,18 +126,12 @@ export class OrderService {
     // Calculate cost breakdown
     const costBreakdown = await this.costCalculatorService.calculateTotal(cart.items);
 
-    // Build checkout summary
+    // Build checkout summary — shape must match the client CheckoutSummary interface
     const summary: CheckoutSummary = {
-      items: cart.items.map((item) => ({
-        productId: item.productId,
-        productName: item.productName,
-        unitPrice: item.unitPrice,
-        quantity: item.quantity,
-        subtotal: item.subtotal,
-      })),
+      cart,
       costBreakdown,
       deliveryAddress,
-      paymentOptions: ['credit_debit_card', 'digital_wallet'],
+      paymentMethods: ['credit_debit_card', 'digital_wallet'],
     };
 
     return summary;

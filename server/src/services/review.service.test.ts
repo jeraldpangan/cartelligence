@@ -99,7 +99,8 @@ describe('ReviewService', () => {
   beforeEach(() => {
     pool = createMockPool();
     cacheService = createMockCacheService();
-    service = new ReviewService(pool, undefined, cacheService);
+    const mockSellerPerf = { recalculateSellerReliability: jest.fn().mockResolvedValue(undefined) };
+    service = new ReviewService(pool, undefined, cacheService, mockSellerPerf as any);
   });
 
   // ─── createReview ───────────────────────────────────────────────────────────

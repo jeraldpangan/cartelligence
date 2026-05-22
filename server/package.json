@@ -16,7 +16,8 @@
     "db:migrate": "ts-node -r tsconfig-paths/register src/database/migrate.ts up",
     "db:migrate:status": "ts-node -r tsconfig-paths/register src/database/migrate.ts status",
     "db:migrate:rollback": "ts-node -r tsconfig-paths/register src/database/migrate.ts rollback",
-    "db:seed": "ts-node -r tsconfig-paths/register src/database/seed.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
+    "db:migrate:babies": "ts-node -r tsconfig-paths/register scratch/add_enum_val.ts"
   },
   "keywords": [
     "grocery",

@@ -170,6 +170,7 @@ describe('Products API Routes', () => {
       expect(mockGetProductsByCategory).toHaveBeenCalledWith(
         ProductCategory.Produce,
         2,
+        undefined,
       );
     });
 
@@ -322,7 +323,7 @@ describe('Products API Routes', () => {
 
       await request(app).get('/api/v1/products/search?q=test&page=3');
 
-      expect(mockSearchProducts).toHaveBeenCalledWith('test', 3);
+      expect(mockSearchProducts).toHaveBeenCalledWith('test', 3, undefined);
     });
   });
 

@@ -38,6 +38,11 @@ export const buyerRoutes: Routes = [
         loadChildren: () =>
           import('../tracking/tracking.routes').then((m) => m.trackingRoutes),
       },
+      {
+        path: 'survey',
+        loadComponent: () =>
+          import('./user-survey/user-survey.component').then((m) => m.UserSurveyComponent),
+      },
     ],
   },
 ];

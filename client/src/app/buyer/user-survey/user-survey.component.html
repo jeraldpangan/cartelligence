@@ -1,0 +1,132 @@
+<div *ngIf="!isEmbedded" class="survey-page-container">
+  <div class="survey-glass-box animate-fade-in">
+    <ng-container *ngTemplateOutlet="surveyContent"></ng-container>
+  </div>
+</div>
+
+<div *ngIf="isEmbedded" class="embedded-survey-container">
+  <ng-container *ngTemplateOutlet="surveyContent"></ng-container>
+</div>
+
+<ng-template #surveyContent>
+  <!-- Header -->
+  <div class="survey-header" [class.embedded]="isEmbedded">
+    <div class="icon-glow-ring">
+      <mat-icon class="ai-spark-icon">auto_awesome</mat-icon>
+    </div>
+    <h1>Tailor Your Cartelligence AI Experience</h1>
+    <p class="subtitle">Complete this brief survey to calibrate our Hybrid Recommendation engine and AI chatbot precisely around your budget and favorite grocery segments.</p>
+  </div>
+
+  <!-- Spinner Loading State -->
+  <div *ngIf="loading" class="spinner-container">
+    <mat-spinner diameter="60" color="primary"></mat-spinner>
+    <p>Consulting AI Preferences...</p>
+  </div>
+
+  <!-- Survey Form -->
+  <div *ngIf="!loading" class="survey-form" [class.embedded]="isEmbedded">
+    
+    <!-- Section 1: Weekly Budget -->
+    <div class="survey-section animate-slide-up-1" [class.embedded]="isEmbedded">
+      <div class="section-title-row">
+        <mat-icon class="section-icon">payments</mat-icon>
+        <h2>1. Set Your Weekly Grocery Budget</h2>
+      </div>
+      <p class="section-desc">We will balance your AI recipe searches and product recommendations to fit comfortably inside this threshold.</p>
+      
+      <div class="budget-slider-card" [class.embedded]="isEmbedded">
+        <div class="budget-display">
+          <span class="currency-symbol">$</span>
+          <span class="budget-value">{{ budget }}</span>
+          <span class="budget-period">/week</span>
+        </div>
+
+        <div class="slider-wrapper">
+          <input 
+            type="range" 
+            min="10" 
+            max="500" 
+            step="5" 
+            [(ngModel)]="budget" 
+            class="premium-slider"
+          />
+          <div class="slider-labels">
+            <span>$10</span>
+            <span>$150</span>
+            <span>$300</span>
+            <span>$500</span>
+          </div>
+        </div>
+
+        <div class="budget-plan-badge animate-pulse" [class.embedded]="isEmbedded">
+          <span class="badge-title">{{ budgetCategory }}</span>
+          <p class="badge-desc">{{ budgetDescription }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Preferred Categories -->
+    <div class="survey-section animate-slide-up-2" [class.embedded]="isEmbedded">
+      <div class="section-title-row">
+        <mat-icon class="section-icon">category</mat-icon>
+        <h2>2. Pick Your Preferred Categories</h2>
+      </div>
+      <p class="section-desc">Select at least one segment you frequently purchase. We use this to establish high-correlation affinities.</p>
+
+      <div class="categories-grid" [class.embedded]="isEmbedded">
+        <div 
+          *ngFor="let cat of categoriesList" 
+          class="category-card"
+          [class.selected]="isCategorySelected(cat.value)"
+          [style.--cat-color]="cat.color"
+          (click)="toggleCategory(cat.value)"
+        >
+          <div class="card-glow-layer"></div>
+          <div class="card-content">
+            <div class="icon-box">
+              <mat-icon>{{ cat.icon }}</mat-icon>
+            </div>
+            <div class="text-box">
+              <h3>{{ cat.label }}</h3>
+              <p>{{ cat.desc }}</p>
+            </div>
+            <div class="checkbox-indicator">
+              <mat-icon>{{ isCategorySelected(cat.value) ? 'check_circle' : 'add_circle_outline' }}</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Action -->
+    <div class="action-row animate-slide-up-3" [class.embedded]="isEmbedded">
+      <button 
+        *ngIf="isEmbedded"
+        mat-stroked-button
+        type="button"
+        class="premium-cancel-btn"
+        (click)="cancelSurvey()"
+      >
+        Cancel
+      </button>
+      <button 
+        mat-flat-button 
+        class="premium-submit-btn" 
+        [disabled]="saving || preferredCategories.length === 0"
+        (click)="saveSurvey()"
+      >
+        <span *ngIf="!saving">
+          <mat-icon>auto_awesome</mat-icon> Activate AI Calibration
+        </span>
+        <span *ngIf="saving" class="btn-loader">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </span>
+      </button>
+    </div>
+
+  </div>
+</ng-template>
+

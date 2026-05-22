@@ -40,6 +40,7 @@ const CATEGORY_DISPLAY_NAMES: Record<ProductCategory, string> = {
   [ProductCategory.Snacks]: 'Snacks',
   [ProductCategory.Household]: 'Household',
   [ProductCategory.PersonalCare]: 'Personal Care',
+  [ProductCategory.BabiesToys]: 'Babies & Toys',
 };
 
 /**
@@ -111,11 +112,12 @@ export class ProductService {
   async getProductsByCategory(
     categoryId: ProductCategory,
     page: number = 1,
+    userId?: string,
   ): Promise<PaginatedResponse<Product>> {
     const validPage = Math.max(1, Math.floor(page));
     const offset = (validPage - 1) * PRODUCTS_PER_PAGE;
 
-    const cacheKey = `${CACHE_PREFIX.BY_CATEGORY}:${categoryId}:page:${validPage}`;
+    const cacheKey = `${CACHE_PREFIX.BY_CATEGORY}:${categoryId}:page:${validPage}:user:${userId || 'guest'}`;
 
     // Try cache first
     const cached = await this.getFromCache<PaginatedResponse<Product>>(cacheKey);
@@ -123,24 +125,110 @@ export class ProductService {
       return cached;
     }
 
-    // Get total count of available products in category
-    const countResult = await this.pool.query(
-      'SELECT COUNT(*) as total FROM product WHERE category = $1 AND is_available = true',
-      [categoryId],
-    );
-    const totalItems = parseInt(countResult.rows[0].total, 10);
+    let products: Product[] = [];
+    let totalItems = 0;
+
+    if (userId) {
+      // 1. Fetch user survey
+      const surveyResult = await this.pool.query(
+        `SELECT budget::float as budget, preferred_categories::text[] as "preferredCategories", browsing_history as "browsingHistory"
+         FROM user_survey
+         WHERE user_id = $1`,
+        [userId]
+      );
+      const survey = surveyResult.rows[0];
+      const budget = survey?.budget ?? 500.0;
+      const preferredCategories = survey?.preferredCategories ?? [];
+      const browsingHistory = survey?.browsingHistory ?? [];
+      const historySet = new Set<string>(browsingHistory);
+
+      // 2. Fetch all matching products with seller reliability and avg reviews
+      const result = await this.pool.query(
+        `SELECT p.*, 
+                COALESCE(up.seller_reliability, 4.5) as seller_reliability,
+                COALESCE(avg_rev.avg_rating, 4.0) as avg_rating,
+                COALESCE(ph.purchase_count, 0) as user_purchases
+         FROM product p
+         LEFT JOIN user_profile up ON p.seller_id = up.id
+         LEFT JOIN (
+           SELECT product_id, AVG(rating) as avg_rating 
+           FROM product_review 
+           WHERE is_fake = false
+           GROUP BY product_id
+         ) avg_rev ON p.id = avg_rev.product_id
+         LEFT JOIN purchase_history ph ON p.id = ph.product_id AND ph.user_id = $2
+         WHERE p.category = $1 AND p.is_available = true AND p.deleted_at IS NULL`,
+        [categoryId, userId],
+      );
+
+      totalItems = result.rows.length;
+
+      // 3. Score and sort products
+      const scored = result.rows.map((row) => {
+        const product = mapRowToProduct(row);
+        const unitPrice = product.unitPrice;
+
+        // Budget Score
+        let budgetScore = 0;
+        if (unitPrice <= budget) {
+          budgetScore = 1.0 - 0.2 * (unitPrice / budget);
+        } else {
+          budgetScore = Math.exp(-4.0 * ((unitPrice - budget) / budget));
+        }
+
+        // Preference Score
+        const isPreferredCategory = preferredCategories.includes(product.category);
+        const preferenceScore = isPreferredCategory ? 1.0 : 0.0;
+
+        // Browsing History Score
+        const isRecentlyViewed = historySet.has(product.id);
+        const browsingScore = isRecentlyViewed ? 1.0 : (isPreferredCategory ? 0.4 : 0.0);
+
+        // Seller Reliability Score
+        const sellerReliability = parseFloat(row.seller_reliability);
+        const sellerScore = (sellerReliability - 1.0) / 4.0;
+
+        // Review Quality Score
+        const avgRating = parseFloat(row.avg_rating);
+        const reviewScore = avgRating / 5.0;
+
+        // Collaborative Popularity
+        const userPurchases = parseInt(row.user_purchases, 10);
+        const popularityScore = userPurchases > 0 ? Math.min(1.0, userPurchases / 5.0) : 0.0;
+
+        // Final score
+        const finalScore = 
+          0.25 * budgetScore + 
+          0.25 * preferenceScore + 
+          0.15 * browsingScore + 
+          0.15 * sellerScore + 
+          0.10 * reviewScore +
+          0.10 * popularityScore;
+
+        return { product, score: finalScore };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      products = scored.slice(offset, offset + PRODUCTS_PER_PAGE).map(item => item.product);
+    } else {
+      // Guest path: standard non-personalized flow
+      const countResult = await this.pool.query(
+        'SELECT COUNT(*) as total FROM product WHERE category = $1 AND is_available = true',
+        [categoryId],
+      );
+      totalItems = parseInt(countResult.rows[0].total, 10);
+
+      const result = await this.pool.query(
+        `SELECT * FROM product 
+         WHERE category = $1 AND is_available = true 
+         ORDER BY name ASC 
+         LIMIT $2 OFFSET $3`,
+         [categoryId, PRODUCTS_PER_PAGE, offset],
+      );
+      products = result.rows.map(mapRowToProduct);
+    }
+
     const totalPages = Math.ceil(totalItems / PRODUCTS_PER_PAGE);
-
-    // Get paginated products
-    const result = await this.pool.query(
-      `SELECT * FROM product 
-       WHERE category = $1 AND is_available = true 
-       ORDER BY name ASC 
-       LIMIT $2 OFFSET $3`,
-      [categoryId, PRODUCTS_PER_PAGE, offset],
-    );
-
-    const products = result.rows.map(mapRowToProduct);
 
     const response: PaginatedResponse<Product> = {
       data: products,
@@ -166,6 +254,7 @@ export class ProductService {
   async searchProducts(
     query: string,
     page: number = 1,
+    userId?: string,
   ): Promise<PaginatedResponse<Product>> {
     // Validate query length
     if (
@@ -187,7 +276,7 @@ export class ProductService {
 
     // Normalize query for cache key
     const normalizedQuery = query.trim().toLowerCase();
-    const cacheKey = `${CACHE_PREFIX.SEARCH}:${normalizedQuery}:page:${validPage}`;
+    const cacheKey = `${CACHE_PREFIX.SEARCH}:${normalizedQuery}:page:${validPage}:user:${userId || 'guest'}`;
 
     // Try cache first
     const cached = await this.getFromCache<PaginatedResponse<Product>>(cacheKey);
@@ -195,27 +284,111 @@ export class ProductService {
       return cached;
     }
 
-    // Use ILIKE for case-insensitive name matching (leverages pg_trgm GIN index)
     const searchPattern = `%${normalizedQuery}%`;
+    let products: Product[] = [];
+    let totalItems = 0;
 
-    // Get total count
-    const countResult = await this.pool.query(
-      'SELECT COUNT(*) as total FROM product WHERE name ILIKE $1 AND is_available = true',
-      [searchPattern],
-    );
-    const totalItems = parseInt(countResult.rows[0].total, 10);
+    if (userId) {
+      // 1. Fetch user survey
+      const surveyResult = await this.pool.query(
+        `SELECT budget::float as budget, preferred_categories::text[] as "preferredCategories", browsing_history as "browsingHistory"
+         FROM user_survey
+         WHERE user_id = $1`,
+        [userId]
+      );
+      const survey = surveyResult.rows[0];
+      const budget = survey?.budget ?? 500.0;
+      const preferredCategories = survey?.preferredCategories ?? [];
+      const browsingHistory = survey?.browsingHistory ?? [];
+      const historySet = new Set<string>(browsingHistory);
+
+      // 2. Fetch all matching products with seller reliability and avg reviews
+      const result = await this.pool.query(
+        `SELECT p.*, 
+                COALESCE(up.seller_reliability, 4.5) as seller_reliability,
+                COALESCE(avg_rev.avg_rating, 4.0) as avg_rating,
+                COALESCE(ph.purchase_count, 0) as user_purchases
+         FROM product p
+         LEFT JOIN user_profile up ON p.seller_id = up.id
+         LEFT JOIN (
+           SELECT product_id, AVG(rating) as avg_rating 
+           FROM product_review 
+           WHERE is_fake = false
+           GROUP BY product_id
+         ) avg_rev ON p.id = avg_rev.product_id
+         LEFT JOIN purchase_history ph ON p.id = ph.product_id AND ph.user_id = $2
+         WHERE p.name ILIKE $1 AND p.is_available = true AND p.deleted_at IS NULL`,
+        [searchPattern, userId],
+      );
+
+      totalItems = result.rows.length;
+
+      // 3. Score and sort products
+      const scored = result.rows.map((row) => {
+        const product = mapRowToProduct(row);
+        const unitPrice = product.unitPrice;
+
+        // Budget Score
+        let budgetScore = 0;
+        if (unitPrice <= budget) {
+          budgetScore = 1.0 - 0.2 * (unitPrice / budget);
+        } else {
+          budgetScore = Math.exp(-4.0 * ((unitPrice - budget) / budget));
+        }
+
+        // Preference Score
+        const isPreferredCategory = preferredCategories.includes(product.category);
+        const preferenceScore = isPreferredCategory ? 1.0 : 0.0;
+
+        // Browsing History Score
+        const isRecentlyViewed = historySet.has(product.id);
+        const browsingScore = isRecentlyViewed ? 1.0 : (isPreferredCategory ? 0.4 : 0.0);
+
+        // Seller Reliability Score
+        const sellerReliability = parseFloat(row.seller_reliability);
+        const sellerScore = (sellerReliability - 1.0) / 4.0;
+
+        // Review Quality Score
+        const avgRating = parseFloat(row.avg_rating);
+        const reviewScore = avgRating / 5.0;
+
+        // Collaborative Popularity
+        const userPurchases = parseInt(row.user_purchases, 10);
+        const popularityScore = userPurchases > 0 ? Math.min(1.0, userPurchases / 5.0) : 0.0;
+
+        // Final score
+        const finalScore = 
+          0.25 * budgetScore + 
+          0.25 * preferenceScore + 
+          0.15 * browsingScore + 
+          0.15 * sellerScore + 
+          0.10 * reviewScore +
+          0.10 * popularityScore;
+
+        return { product, score: finalScore };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      products = scored.slice(offset, offset + PRODUCTS_PER_PAGE).map(item => item.product);
+    } else {
+      // Guest path
+      const countResult = await this.pool.query(
+        'SELECT COUNT(*) as total FROM product WHERE name ILIKE $1 AND is_available = true',
+        [searchPattern],
+      );
+      totalItems = parseInt(countResult.rows[0].total, 10);
+
+      const result = await this.pool.query(
+        `SELECT * FROM product 
+         WHERE name ILIKE $1 AND is_available = true 
+         ORDER BY name ASC 
+         LIMIT $2 OFFSET $3`,
+        [searchPattern, PRODUCTS_PER_PAGE, offset],
+      );
+      products = result.rows.map(mapRowToProduct);
+    }
+
     const totalPages = Math.ceil(totalItems / PRODUCTS_PER_PAGE);
-
-    // Get paginated results
-    const result = await this.pool.query(
-      `SELECT * FROM product 
-       WHERE name ILIKE $1 AND is_available = true 
-       ORDER BY name ASC 
-       LIMIT $2 OFFSET $3`,
-      [searchPattern, PRODUCTS_PER_PAGE, offset],
-    );
-
-    const products = result.rows.map(mapRowToProduct);
 
     const response: PaginatedResponse<Product> = {
       data: products,

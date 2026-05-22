@@ -319,4 +319,217 @@ export class RecommendationService {
       return { products: null, status: 'Recommendation engine unavailable' };
     }
   }
+
+  /**
+   * Saves or updates a user's grocery shopping preference survey.
+   * Requirements: A. Hybrid Recommendation Algorithm
+   */
+  async saveUserSurvey(
+    userId: string,
+    budget: number,
+    preferredCategories: ProductCategory[],
+    browsingHistory: string[] = []
+  ): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO user_survey (user_id, budget, preferred_categories, browsing_history, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (user_id) 
+       DO UPDATE SET 
+         budget = EXCLUDED.budget,
+         preferred_categories = EXCLUDED.preferred_categories,
+         browsing_history = EXCLUDED.browsing_history,
+         updated_at = NOW()`,
+      [userId, budget, preferredCategories, JSON.stringify(browsingHistory)]
+    );
+  }
+
+  /**
+   * Retrieves a user's preference survey responses.
+   */
+  async getUserSurvey(userId: string): Promise<any> {
+    const result = await this.pool.query(
+      `SELECT budget::float as budget, preferred_categories::text[] as "preferredCategories", browsing_history as "browsingHistory"
+       FROM user_survey
+       WHERE user_id = $1`,
+      [userId]
+    );
+    if (result.rows.length === 0) return null;
+    return result.rows[0];
+  }
+
+  /**
+   * Tracks a product click/view and appends it to the user's browsing history.
+   * If no survey exists for the user, creates one with sensible defaults.
+   * Keeps only the last 50 browsing history entries to prevent unbounded growth.
+   * Also tracks click counts per category to adaptively learn user preferences.
+   *
+   * Requirements: A. Hybrid Recommendation Algorithm (Real-time Browsing Signal)
+   */
+  async trackProductClick(userId: string, productId: string, category?: string): Promise<void> {
+    try {
+      // Check if user has a survey
+      const existingSurvey = await this.getUserSurvey(userId);
+
+      if (!existingSurvey) {
+        // Create a default survey with the clicked product seeding the browsing history
+        const defaultCategories = category ? [category] : ['produce'];
+        await this.pool.query(
+          `INSERT INTO user_survey (user_id, budget, preferred_categories, browsing_history, updated_at)
+           VALUES ($1, 500, $2, $3, NOW())
+           ON CONFLICT (user_id) DO NOTHING`,
+          [userId, defaultCategories, JSON.stringify([productId])]
+        );
+        return;
+      }
+
+      // Append product ID to browsing history, remove duplicates, and keep last 50
+      const currentHistory: string[] = existingSurvey.browsingHistory || [];
+      const filteredHistory = currentHistory.filter((id: string) => id !== productId);
+      filteredHistory.unshift(productId); // Most recent first
+      const trimmedHistory = filteredHistory.slice(0, 50);
+
+      // If the clicked category is not already in preferred categories, add it
+      const currentPrefs: string[] = existingSurvey.preferredCategories || [];
+      let updatedPrefs = currentPrefs;
+      if (category && !currentPrefs.includes(category)) {
+        updatedPrefs = [...currentPrefs, category];
+      }
+
+      await this.pool.query(
+        `UPDATE user_survey
+         SET browsing_history = $2,
+             preferred_categories = $3,
+             updated_at = NOW()
+         WHERE user_id = $1`,
+        [userId, JSON.stringify(trimmedHistory), updatedPrefs]
+      );
+    } catch (error) {
+      // Non-critical — never block the user experience for tracking failures
+      console.error('RecommendationService.trackProductClick error:', error);
+    }
+  }
+
+  /**
+   * Computes high-accuracy hybrid recommendations for a user.
+   * Weighs:
+   * 1. Budget matches (rewarding items within budget, exponential penalty above)
+   * 2. Category affinities (from survey)
+   * 3. Browsing history (recent clicks)
+   * 4. Seller reliability ratings
+   * 5. Review quality (average review rating)
+   * Falls back to a mix of collaborative purchase frequency + popularity if no survey completed.
+   *
+   * Requirements: A. Hybrid Recommendation Algorithm
+   */
+  async getHybridRecommendations(userId: string, limit: number = 10): Promise<RecommendationResult> {
+    try {
+      const survey = await this.getUserSurvey(userId);
+
+      // If no survey exists, return a combination of user purchase history (collaborative) and popular items
+      if (!survey) {
+        const historyRes = await this.getPersonalized(userId);
+        const fallbackRes = await this.getFallback();
+        
+        const historyProd = historyRes.products || [];
+        const fallbackProd = fallbackRes.products || [];
+        
+        // Blend items (history first, then fallback to pad to limit)
+        const blendedMap = new Map<string, Product>();
+        historyProd.forEach(p => blendedMap.set(p.id, p));
+        fallbackProd.forEach(p => {
+          if (blendedMap.size < limit) blendedMap.set(p.id, p);
+        });
+        
+        return {
+          products: Array.from(blendedMap.values()),
+          status: 'blended_popularity'
+        };
+      }
+
+      const { budget, preferredCategories, browsingHistory } = survey;
+      const historySet = new Set<string>(browsingHistory || []);
+
+      // Fetch all available products with average ratings and seller reliability
+      const result = await this.pool.query(
+        `SELECT p.*, 
+                COALESCE(up.seller_reliability, 4.5) as seller_reliability,
+                COALESCE(avg_rev.avg_rating, 4.0) as avg_rating,
+                COALESCE(ph.purchase_count, 0) as user_purchases
+         FROM product p
+         LEFT JOIN user_profile up ON p.seller_id = up.id
+         LEFT JOIN (
+           SELECT product_id, AVG(rating) as avg_rating 
+           FROM product_review 
+           WHERE is_fake = false
+           GROUP BY product_id
+         ) avg_rev ON p.id = avg_rev.product_id
+         LEFT JOIN purchase_history ph ON p.id = ph.product_id AND ph.user_id = $1
+         WHERE p.is_available = true AND p.deleted_at IS NULL`,
+        [userId]
+      );
+
+      const productsWithScores = result.rows.map((row) => {
+        const product = mapRowToProduct(row);
+        const unitPrice = product.unitPrice;
+        
+        // 1. Budget Score
+        let budgetScore = 0;
+        if (unitPrice <= budget) {
+          // Items within budget scored based on proximity (closer to budget means higher value, max 1.0)
+          budgetScore = 1.0 - 0.2 * (unitPrice / budget);
+        } else {
+          // Items exceeding budget receive an exponential penalty
+          budgetScore = Math.exp(-4.0 * ((unitPrice - budget) / budget));
+        }
+
+        // 2. Preference Score (Category matching)
+        const isPreferredCategory = preferredCategories.includes(product.category);
+        const preferenceScore = isPreferredCategory ? 1.0 : 0.0;
+
+        // 3. Browsing History Score
+        const isRecentlyViewed = historySet.has(product.id);
+        const browsingScore = isRecentlyViewed ? 1.0 : (isPreferredCategory ? 0.4 : 0.0);
+
+        // 4. Seller Reliability Score (Normalized 1-5 rating -> 0-1)
+        const sellerReliability = parseFloat(row.seller_reliability);
+        const sellerScore = (sellerReliability - 1.0) / 4.0;
+
+        // 5. Review Quality Score (Normalized 1-5 rating -> 0-1)
+        const avgRating = parseFloat(row.avg_rating);
+        const reviewScore = avgRating / 5.0;
+
+        // 6. Collaborative Popularity (from previous purchases)
+        const userPurchases = parseInt(row.user_purchases, 10);
+        const popularityScore = userPurchases > 0 ? Math.min(1.0, userPurchases / 5.0) : 0.0;
+
+        // Hybrid Blend Formula
+        const finalScore = 
+          0.25 * budgetScore + 
+          0.25 * preferenceScore + 
+          0.15 * browsingScore + 
+          0.15 * sellerScore + 
+          0.10 * reviewScore +
+          0.10 * popularityScore;
+
+        const enrichedProduct = {
+          ...product,
+          sellerReliability: sellerReliability,
+          avgRating: avgRating
+        };
+
+        return { product: enrichedProduct, score: finalScore };
+      });
+
+      // Sort by final hybrid score descending and limit results
+      const sortedProducts = productsWithScores
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(item => item.product);
+
+      return { products: sortedProducts, status: 'hybrid_personalized' };
+    } catch (error) {
+      console.error('RecommendationService.getHybridRecommendations error:', error);
+      return { products: null, status: 'Recommendation engine unavailable' };
+    }
+  }
 }

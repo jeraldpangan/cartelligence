@@ -10,7 +10,7 @@ export const catalogRoutes: Routes = [
   },
   {
     path: 'category/:categoryId',
-    component: ProductListComponent,
+    component: CatalogPageComponent,
   },
   {
     path: 'product/:productId',
