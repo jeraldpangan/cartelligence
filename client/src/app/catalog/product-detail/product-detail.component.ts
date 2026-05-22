@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,7 +20,6 @@ import { ProductReviewFormComponent } from '../../reviews/product-review-form/pr
   imports: [
     CommonModule,
     FormsModule,
-    DecimalPipe,
     MatCardModule,
     MatButtonModule,
     MatIconModule,

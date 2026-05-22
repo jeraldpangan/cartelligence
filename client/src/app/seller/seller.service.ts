@@ -154,4 +154,18 @@ export class SellerService {
   formatPrice(amount: number): string {
     return `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
+  // --- Backwards-compatible aliases used by some components ---
+  registerSeller(payload: any): Observable<any> {
+    // lightweight endpoint used by the registration form
+    return this.http.post('/api/v1/seller/register', payload);
+  }
+
+  addProduct(formData: FormData): Observable<any> {
+    return this.createProduct(formData);
+  }
+
+  listProducts(): Observable<any> {
+    // keep the original callers working (returns Observable<any>)
+    return this.getSellerProducts(1) as unknown as Observable<any>;
+  }
 }

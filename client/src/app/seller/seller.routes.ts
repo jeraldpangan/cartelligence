@@ -25,6 +25,13 @@ export const sellerRoutes: Routes = [
           ),
       },
       {
+        path: 'register',
+        loadComponent: () =>
+          import('./seller-registration/seller-registration.component').then(
+            (m) => m.SellerRegistrationComponent,
+          ),
+      },
+      {
         path: 'products',
         loadComponent: () =>
           import('./product-management/product-management.component').then(
@@ -36,6 +43,13 @@ export const sellerRoutes: Routes = [
         loadComponent: () =>
           import('./product-form/product-form.component').then(
             (m) => m.ProductFormComponent,
+          ),
+      },
+      {
+        path: 'add-product',
+        loadComponent: () =>
+          import('./seller-product-form/seller-product-form.component').then(
+            (m) => m.SellerProductFormComponent,
           ),
       },
       {

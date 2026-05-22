@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,7 +36,6 @@ interface SidebarCategory {
     MatButtonModule,
     RouterLink,
     CommonModule,
-    DecimalPipe,
     MatProgressSpinnerModule,
   ],
   templateUrl: './catalog-page.component.html',

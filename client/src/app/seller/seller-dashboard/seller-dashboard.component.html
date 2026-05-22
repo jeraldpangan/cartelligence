@@ -1,0 +1,23 @@
+<div class="seller-dashboard">
+  <mat-card class="header">
+    <div class="header-row">
+      <h2>Your Products</h2>
+      <button mat-flat-button color="primary" (click)="goAdd()">Add Product</button>
+    </div>
+  </mat-card>
+
+  <div *ngIf="loading" class="loading">Loading…</div>
+
+  <div class="product-list">
+    <mat-card *ngFor="let p of products" class="product-card">
+      <div class="row">
+        <img [src]="p.imageUrl || '/images/placeholder.png'" alt="" />
+        <div class="meta">
+          <h3>{{ p.name }}</h3>
+          <p>Qty: {{ p.quantity }}</p>
+          <p>Price: {{ p.price }}</p>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>

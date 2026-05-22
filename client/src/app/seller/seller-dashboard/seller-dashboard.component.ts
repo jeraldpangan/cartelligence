@@ -186,7 +186,8 @@ const RECENT_ACTIVITY_COUNT = 5;
       }
     </div>
   `,
-  styles: [`
+  styles: [
+    `
     .dashboard-container {
       max-width: 960px;
       margin: 0 auto;
@@ -411,7 +412,8 @@ const RECENT_ACTIVITY_COUNT = 5;
       height: 48px;
       margin-bottom: 12px;
     }
-  `],
+  `
+  ],
 })
 export class SellerDashboardComponent implements OnInit {
   // ─── State signals ──────────────────────────────────────────────────────────

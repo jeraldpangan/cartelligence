@@ -139,8 +139,10 @@
                         <mat-spinner diameter="20" color="accent" class="inline-spinner"></mat-spinner>
                         <span>Securing Slot...</span>
                       } @else {
-                        <mat-icon>bolt</mat-icon>
-                        <span>Buy Now / Checkout</span>
+                        <ng-container>
+                          <mat-icon>bolt</mat-icon>
+                          <span>Buy Now / Checkout</span>
+                        </ng-container>
                       }
                     </button>
                     
@@ -154,8 +156,10 @@
                         <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
                         <span>Adding...</span>
                       } @else {
-                        <mat-icon>shopping_cart</mat-icon>
-                        <span>Add to Cart</span>
+                        <ng-container>
+                          <mat-icon>shopping_cart</mat-icon>
+                          <span>Add to Cart</span>
+                        </ng-container>
                       }
                     </button>
                   </div>

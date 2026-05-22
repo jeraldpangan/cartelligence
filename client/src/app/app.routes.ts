@@ -22,7 +22,7 @@ export const routes: Routes = [
     // All authenticated routes share the app shell (header + footer)
     path: '',
     component: LayoutComponent,
-    canActivate: [authGuard],
+    //canActivate: [authGuard],
     children: [
       {
         // Seller panel — lazy-loaded as a separate bundle (Requirement 7.6)

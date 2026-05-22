@@ -1,0 +1,33 @@
+<mat-card class="seller-card">
+  <h2>Register Your Store</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Store Name</mat-label>
+      <input matInput formControlName="storeName" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Short Description</mat-label>
+      <textarea matInput formControlName="storeDescription" rows="3"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Logo URL</mat-label>
+      <input matInput formControlName="storeLogoUrl" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Business Registration</mat-label>
+      <input matInput formControlName="businessRegistration" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Support Phone</mat-label>
+      <input matInput formControlName="supportPhone" />
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="submitting">Register</button>
+    </div>
+  </form>
+</mat-card>
