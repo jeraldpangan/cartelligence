@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { getDatabasePool } from '../config/database';
 import { OrderStatus, ProductCategory } from '@shared/enums';
 import { RecommendationService } from './recommendation.service';
+import { ReviewSummarizer } from './review-summarizer.service';
 
 export interface ChatBotMessage {
   role: 'user' | 'model';
@@ -35,12 +36,12 @@ export class ChatbotService {
     if (isApiKeyConfigured) {
       try {
         const systemPrompt = `You are a helpful e-commerce shopping assistant for Cartelligence.
-Analyze the user's latest query, and classify their intent into one of these: 'product_search', 'order_tracking', 'sales_info', or 'general'.
-If they are searching for products, extract ONLY the core single noun keyword (e.g. "milk", "apple", "baby"). NEVER include generic words like "items", "stuff", "products", or "things". Keep it to the absolute most basic singular noun.
+Analyze the user's latest query, and classify their intent into one of these: 'product_search', 'order_tracking', 'sales_info', 'review_check', or 'general'.
+If they are searching for products or checking reviews for a product, extract ONLY the core single noun keyword (e.g. "milk", "apple", "baby", "tomatoes"). NEVER include generic words like "items", "stuff", "products", or "things". Keep it to the absolute most basic singular noun or plural noun.
 Write a warm, conversational, friendly response to introduce what you are doing (e.g., "Certainly! Let me check our fresh catalogue for organic apples...").
 Return your response strictly in JSON format matching this schema:
 {
-  "intent": "product_search" | "order_tracking" | "sales_info" | "general",
+  "intent": "product_search" | "order_tracking" | "sales_info" | "review_check" | "general",
   "keyword": string or null,
   "conversationalReply": string
 }`;
@@ -104,6 +105,12 @@ Return your response strictly in JSON format matching this schema:
               return {
                 message: `${reply}\n\n${dbResult.message}`
               };
+            } else if (intent === 'review_check') {
+              const dbResult = await this.handleReviewCheck(keyword || userMessage);
+              return {
+                message: `${reply}\n\n${dbResult.message}`,
+                products: dbResult.products
+              };
             } else {
               return {
                 message: reply
@@ -120,6 +127,11 @@ Return your response strictly in JSON format matching this schema:
 
     // --- GRACEFUL LOCAL BACKUP (Rule-Based Keyword Matching) ---
     const text = userMessage.trim().toLowerCase();
+
+    // 0. Review Checking Queries
+    if (text.includes('review') || text.includes('feedback') || text.includes('rating')) {
+      return this.handleReviewCheck(text.replace(/review|reviews|of|check|feedback|rating/g, '').trim());
+    }
 
     // 1. Order Status & Tracking Queries
     if (
@@ -468,5 +480,66 @@ Return your response strictly in JSON format matching this schema:
       .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  }
+
+  /**
+   * Queries the top product matching the keyword and runs its reviews through the NLP summarizer.
+   */
+  private async handleReviewCheck(query: string): Promise<ChatBotResponse> {
+    try {
+      const productResult = await this.pool.query(
+        `SELECT p.id, p.name, p.category, p.unit_price as "unitPrice", p.unit, p.description, p.stock_quantity as "stockQuantity", pi.url as primary_image_url
+         FROM product p
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
+         WHERE p.is_available = true AND p.deleted_at IS NULL AND p.name ILIKE $1
+         ORDER BY p.created_at DESC LIMIT 1`,
+        [`%${query}%`]
+      );
+
+      if (productResult.rows.length === 0) {
+        return {
+          message: `I couldn't find any products matching "${query}" in our catalog to check reviews for.`
+        };
+      }
+
+      const productRow = productResult.rows[0];
+      const product = {
+        id: productRow.id,
+        name: productRow.name,
+        category: productRow.category,
+        unitPrice: parseFloat(productRow.unitPrice),
+        unit: productRow.unit,
+        description: productRow.description,
+        stockQuantity: productRow.stockQuantity,
+        image: productRow.primary_image_url
+      };
+
+      const reviewResult = await this.pool.query(
+        `SELECT comment FROM product_review
+         WHERE product_id = $1 AND is_fake = false
+         ORDER BY created_at DESC LIMIT 20`,
+        [product.id]
+      );
+
+      const comments = reviewResult.rows.map(r => r.comment);
+
+      const summary = await ReviewSummarizer.summarize(comments);
+
+      const summaryFormatted = `**AI Review Synthesis for ${product.name}**\n\n` +
+        `> ${summary.summaryText}\n\n` +
+        `- 🥬 **Quality**: ${summary.productQuality}\n` +
+        `- 🤝 **Seller**: ${summary.sellerCredibility}\n` +
+        `- ⭐ **Satisfaction**: ${summary.customerSatisfaction}`;
+
+      return {
+        message: summaryFormatted,
+        products: [product]
+      };
+    } catch (error) {
+      console.error('[ChatbotService] handleReviewCheck error:', error);
+      return {
+        message: "I hit a snag while trying to synthesize the reviews. Please try again later!"
+      };
+    }
   }
 }

@@ -213,7 +213,6 @@ export class OrderService {
     try {
       await client.query('BEGIN');
 
-      // Insert order record
       const orderResult = await client.query(
         `INSERT INTO "order" (user_id, order_number, status, subtotal, delivery_fee, discount, grand_total, delivery_address)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -221,7 +220,7 @@ export class OrderService {
         [
           userId,
           orderNumber,
-          OrderStatus.Confirmed,
+          OrderStatus.Delivered,
           costBreakdown.subtotal,
           costBreakdown.deliveryFee,
           costBreakdown.discount,
@@ -269,7 +268,7 @@ export class OrderService {
       return {
         orderId,
         orderNumber,
-        status: OrderStatus.Confirmed,
+        status: OrderStatus.Delivered,
         grandTotal: costBreakdown.grandTotal,
         deliveryAddress,
         createdAt: createdAt instanceof Date ? createdAt.toISOString() : String(createdAt),

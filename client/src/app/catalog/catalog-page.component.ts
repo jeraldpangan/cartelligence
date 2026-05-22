@@ -80,7 +80,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
   readonly sidebarCategories: SidebarCategory[] = [
     { id: 'electronics', name: 'Electronics', icon: 'devices', dbCategoryId: 'snacks' },
     { id: 'fashion', name: 'Fashion', icon: 'checkroom', dbCategoryId: 'personal_care' },
-    { id: 'home_living', name: 'Home & Living', icon: 'chair', dbCategoryId: 'produce' },
+    { id: 'home_living', name: 'Home & Living', icon: 'chair', dbCategoryId: 'household' },
     { id: 'groceries', name: 'Groceries', icon: 'apple', dbCategoryId: 'produce' },
     { id: 'health_beauty', name: 'Health & Beauty', icon: 'spa', dbCategoryId: 'personal_care' },
     { id: 'babies_toys', name: 'Babies & Toys', icon: 'child_care', dbCategoryId: 'babies_toys' },
@@ -206,7 +206,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
               description: product.description,
               stockQuantity: product.stockQuantity,
               isAvailable: product.isAvailable,
-              image: this.getCategoryPlaceholderImage(product.category, index, product.name),
+              image: product.image || this.getCategoryPlaceholderImage(product.category, index, product.name),
               sellerReliability: (product as any).sellerReliability || (4.5 + (index % 5) * 0.1).toFixed(1)
             };
           });
@@ -233,7 +233,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
                 originalPrice: Number((product.unitPrice * 1.3).toFixed(2)),
                 rating: Number((4.5 + (index % 5) * 0.1).toFixed(1)),
                 reviewsCount: 15 + index * 12,
-                image: this.getCategoryPlaceholderImage(product.category, index, product.name),
+                image: product.image || this.getCategoryPlaceholderImage(product.category, index, product.name),
                 category: product.category
               };
             });
@@ -338,7 +338,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
               category: product.category,
               stockQuantity: product.stockQuantity,
               isAvailable: product.isAvailable,
-              image: this.getCategoryPlaceholderImage(product.category, index, product.name)
+              image: product.image || this.getCategoryPlaceholderImage(product.category, index, product.name)
             };
           });
           this.totalCategoryItems = response.totalItems || 0;

@@ -345,10 +345,56 @@
             <mat-icon class="checker-icon">verified_user</mat-icon>
             <h3>Fake Review Checker</h3>
             <p class="checker-description">
-              Our advanced AI engine analyzes review text syntax, submission timestamps, and user patterns to detect
-              automated spam or artificial sentiment in real-time.
+              Our advanced AI engine analyzes review text syntax to detect automated spam or artificial sentiment.
             </p>
-            <div class="checker-status-badge">COMING SOON IN CARTELLIGENCE PRO</div>
+
+            <div class="checker-input-section">
+              <textarea [formControl]="fakeReviewControl" placeholder="Paste a suspicious review here..." class="checker-textarea" rows="4"></textarea>
+              <button mat-flat-button class="checker-btn hover-lift" (click)="checkFakeReview()" [disabled]="!fakeReviewControl.value?.trim() || isCheckingFakeReview()">
+                @if (isCheckingFakeReview()) {
+                  <mat-icon class="spin">sync</mat-icon> Checking...
+                } @else {
+                  <mat-icon>search</mat-icon> Analyze Review
+                }
+              </button>
+            </div>
+
+            @if (fakeReviewResult()) {
+              <div class="checker-result-card fade-in" [class.is-fake]="fakeReviewResult().isFake" [class.is-genuine]="!fakeReviewResult().isFake">
+                <div class="result-header">
+                  @if (fakeReviewResult().isFake) {
+                    <mat-icon class="text-red">warning</mat-icon>
+                    <h4>High Probability of Fake</h4>
+                  } @else {
+                    <mat-icon class="text-green">check_circle</mat-icon>
+                    <h4>Looks Genuine</h4>
+                  }
+                </div>
+                
+                <div class="probability-bar-container">
+                  <div class="probability-label">
+                    <span>Fraud Probability</span>
+                    <span>{{ (fakeReviewResult().probability * 100) | number:'1.0-0' }}%</span>
+                  </div>
+                  <div class="probability-bar-bg">
+                    <div class="probability-bar-fill" [style.width.%]="fakeReviewResult().probability * 100" [class.bg-red]="fakeReviewResult().isFake" [class.bg-green]="!fakeReviewResult().isFake"></div>
+                  </div>
+                </div>
+
+                <div class="reasons-list">
+                  <strong>Detected Factors:</strong>
+                  <ul>
+                    @for (reason of fakeReviewResult().reason; track reason) {
+                      <li>{{ reason }}</li>
+                    }
+                  </ul>
+                </div>
+
+                <button mat-stroked-button class="reset-checker-btn" (click)="resetFakeReviewChecker()">
+                  Check Another
+                </button>
+              </div>
+            }
           </div>
         </div>
         }

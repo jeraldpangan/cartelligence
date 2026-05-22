@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, requireRole, AuthenticatedRequest } from '../../middleware/auth';
 import { ReviewService } from '../../services/review.service';
 import { CreateReviewDto } from '../../services/review.dto';
+import { FakeReviewDetector } from '../../services/fake-review-detector.service';
 import { UserRole } from '@shared/enums';
 import { AppError } from '../../middleware/errorHandler';
 import { ErrorCode } from '@shared/errors';
@@ -126,6 +127,32 @@ router.delete(
       next(error);
     }
   },
+);
+
+/**
+ * POST /api/v1/reviews/check-fake
+ * Ad-hoc checking of a review string to see if it is fake.
+ * Public endpoint.
+ * Body: { text: string, hasImage?: boolean }
+ */
+router.post(
+  '/check-fake',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { text, hasImage } = req.body;
+      if (typeof text !== 'string') {
+         res.status(400).json({ error: 'text is required' });
+         return;
+      }
+      const detection = FakeReviewDetector.detect({
+        text,
+        hasImage: !!hasImage
+      });
+      res.status(200).json({ data: detection });
+    } catch (error) {
+      next(error);
+    }
+  }
 );
 
 export default router;

@@ -26,6 +26,7 @@ export interface Product {
   description: string;
   nutritionalInfo: string;
   isAvailable: boolean;
+  image?: string | null;
   createdAt: string;
   updatedAt: string;
 }

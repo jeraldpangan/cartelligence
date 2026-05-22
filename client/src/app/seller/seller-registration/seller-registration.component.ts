@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { SellerService } from '../seller.service';
 import { Router } from '@angular/router';
-
+import { AuthService } from '../../auth/auth.service';
 @Component({
   selector: 'app-seller-registration',
   standalone: true,
@@ -21,7 +21,7 @@ export class SellerRegistrationComponent {
 
   submitting = false;
 
-  constructor(private fb: FormBuilder, private seller: SellerService, private router: Router) {
+  constructor(private fb: FormBuilder, private seller: SellerService, private router: Router, private auth: AuthService) {
     this.form = this.fb.group({
       storeName: ['', [Validators.required, Validators.minLength(3)]],
       storeDescription: [''],
@@ -43,7 +43,12 @@ export class SellerRegistrationComponent {
     };
 
     this.seller.registerSeller(payload).subscribe({
-      next: () => this.router.navigate(['/seller/dashboard']),
+      next: () => {
+        this.auth.refreshAccessToken().subscribe({
+          next: () => this.router.navigate(['/seller']),
+          error: () => this.router.navigate(['/seller'])
+        });
+      },
       error: () => (this.submitting = false),
     });
   }

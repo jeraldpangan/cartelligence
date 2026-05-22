@@ -270,6 +270,7 @@ export class SellerService {
     sellerId: string,
     productId: string,
     dto: UpdateProductDto,
+    images: Express.Multer.File[] = []
   ): Promise<SellerProduct> {
     // Validate DTO fields
     const validationErrors = validateUpdateProductDto(dto);
@@ -302,52 +303,86 @@ export class SellerService {
       throw new AppError(403, ErrorCode.Forbidden, 'You do not own this product');
     }
 
-    // Build dynamic UPDATE query with only provided fields
-    const updates: string[] = [];
-    const values: unknown[] = [];
-    let paramIndex = 1;
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    if (dto.name !== undefined) {
-      updates.push(`name = $${paramIndex++}`);
-      values.push(dto.name);
-    }
-    if (dto.category !== undefined) {
-      updates.push(`category = $${paramIndex++}`);
-      values.push(dto.category);
-    }
-    if (dto.unitPrice !== undefined) {
-      updates.push(`unit_price = $${paramIndex++}`);
-      values.push(dto.unitPrice);
-    }
-    if (dto.unit !== undefined) {
-      updates.push(`unit = $${paramIndex++}`);
-      values.push(dto.unit);
-    }
-    if (dto.stockQuantity !== undefined) {
-      updates.push(`stock_quantity = $${paramIndex++}`);
-      values.push(dto.stockQuantity);
-    }
-    if (dto.description !== undefined) {
-      updates.push(`description = $${paramIndex++}`);
-      values.push(dto.description);
-    }
-    if (dto.nutritionalInfo !== undefined) {
-      updates.push(`nutritional_info = $${paramIndex++}`);
-      values.push(dto.nutritionalInfo);
-    }
+      // Process images if any
+      if (images.length > 0) {
+        // Get existing image count to set sort_order properly
+        const countResult = await client.query(
+          `SELECT COUNT(*) as count FROM product_image WHERE product_id = $1`,
+          [productId]
+        );
+        const existingCount = parseInt(countResult.rows[0].count, 10);
+        
+        const processedImages = await this.uploadService.processImages(images);
+        
+        // Insert new images
+        for (let i = 0; i < processedImages.length; i++) {
+          const img = processedImages[i];
+          // If it's the very first image overall, make it primary
+          const isPrimary = existingCount === 0 && i === 0;
+          await client.query(
+            `INSERT INTO product_image (product_id, url, filename, sort_order, is_primary)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [productId, img.url, img.filename, existingCount + i, isPrimary]
+          );
+        }
+      }
 
-    if (updates.length === 0) {
-      // No fields to update — return existing product
-      return this.getSellerProductById(sellerId, productId);
+      // Build dynamic UPDATE query with only provided fields
+      const updates: string[] = [];
+      const values: unknown[] = [];
+      let paramIndex = 1;
+
+      if (dto.name !== undefined) {
+        updates.push(`name = $${paramIndex++}`);
+        values.push(dto.name);
+      }
+      if (dto.category !== undefined) {
+        updates.push(`category = $${paramIndex++}`);
+        values.push(dto.category);
+      }
+      if (dto.unitPrice !== undefined) {
+        updates.push(`unit_price = $${paramIndex++}`);
+        values.push(dto.unitPrice);
+      }
+      if (dto.unit !== undefined) {
+        updates.push(`unit = $${paramIndex++}`);
+        values.push(dto.unit);
+      }
+      if (dto.stockQuantity !== undefined) {
+        updates.push(`stock_quantity = $${paramIndex++}`);
+        values.push(dto.stockQuantity);
+      }
+      if (dto.description !== undefined) {
+        updates.push(`description = $${paramIndex++}`);
+        values.push(dto.description);
+      }
+      if (dto.nutritionalInfo !== undefined) {
+        updates.push(`nutritional_info = $${paramIndex++}`);
+        values.push(dto.nutritionalInfo);
+      }
+
+      if (updates.length > 0) {
+        // Always update the updated_at timestamp
+        updates.push(`updated_at = NOW()`);
+        values.push(productId);
+        const query = `UPDATE product SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+        await client.query(query, values);
+      }
+      
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      if (images && images.length > 0) {
+        await this.uploadService.cleanupFiles(images);
+      }
+      throw error;
+    } finally {
+      client.release();
     }
-
-    // Always update the updated_at timestamp
-    updates.push(`updated_at = NOW()`);
-
-    values.push(productId);
-    const query = `UPDATE product SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
-
-    await this.pool.query(query, values);
 
     // Invalidate cache using CacheService (Requirements: 8.1, 8.3, 8.4, 8.5)
     await this.cacheService.invalidateProductCache(productId, existing.category);

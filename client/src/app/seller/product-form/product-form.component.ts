@@ -451,20 +451,12 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** Calls updateProduct with the form values (images handled separately via FormData if needed). */
+  /** Calls updateProduct with the form values and pending images via FormData. */
   private submitUpdate(): void {
-    const raw = this.form.getRawValue();
-    const dto = {
-      name: raw.name,
-      description: raw.description || undefined,
-      category: raw.category,
-      unitPrice: Number(raw.unitPrice),
-      unit: raw.unit,
-      stockQuantity: Number(raw.stockQuantity),
-    };
+    const formData = this.buildFormData();
 
     this.sellerService
-      .updateProduct(this.productId!, dto)
+      .updateProduct(this.productId!, formData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

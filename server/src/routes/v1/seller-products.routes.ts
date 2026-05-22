@@ -141,6 +141,7 @@ router.post(
  */
 router.put(
   '/:id',
+  uploadMiddleware.array('images', 5),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const sellerId = req.user!.sub;
@@ -149,8 +150,9 @@ router.put(
       validateUuidParam(productId, 'id');
 
       const dto = parseUpdateProductBody(req.body);
+      const images = (req.files as Express.Multer.File[]) || [];
 
-      const product = await sellerService.updateProduct(sellerId, productId, dto);
+      const product = await sellerService.updateProduct(sellerId, productId, dto, images);
 
       res.status(200).json({ data: product });
     } catch (error) {

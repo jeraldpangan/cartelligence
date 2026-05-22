@@ -1624,5 +1624,154 @@
   }
 }
 
+// ─── Fake Review Checker UI ─────────────────────────────
+.review-checker-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #f8fafc;
+  overflow-y: auto;
+}
 
+.review-checker-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
+  .checker-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #166fe5;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: #1e293b;
+    font-size: 1.5rem;
+  }
+
+  .checker-description {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .checker-input-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .checker-textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      &:focus {
+        outline: none;
+        border-color: #166fe5;
+        box-shadow: 0 0 0 2px rgba(22, 111, 229, 0.2);
+      }
+    }
+
+    .checker-btn {
+      background: #166fe5;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      &.hover-lift:hover {
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  .checker-result-card {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    text-align: left;
+
+    &.is-fake {
+      border-color: rgba(211, 47, 47, 0.3);
+      background: rgba(211, 47, 47, 0.05);
+    }
+    &.is-genuine {
+      border-color: rgba(46, 125, 50, 0.3);
+      background: rgba(46, 125, 50, 0.05);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      h4 { margin: 0; font-size: 1.1rem; }
+    }
+
+    .probability-bar-container {
+      margin-bottom: 1.5rem;
+      .probability-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        color: #475569;
+      }
+      .probability-bar-bg {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        .probability-bar-fill {
+          height: 100%;
+          transition: width 0.5s ease;
+          &.bg-red { background: #d32f2f; }
+          &.bg-green { background: #2e7d32; }
+        }
+      }
+    }
+
+    .reasons-list {
+      font-size: 0.85rem;
+      color: #334155;
+      margin-bottom: 1rem;
+      ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1.25rem;
+        li { margin-bottom: 0.25rem; }
+      }
+    }
+
+    .reset-checker-btn {
+      width: 100%;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+  }
+}
+
+.text-red { color: #d32f2f; }
+.text-green { color: #2e7d32; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }

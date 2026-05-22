@@ -37,6 +37,14 @@ export interface CreateReviewDto {
   comment: string;
 }
 
+export interface FakeReviewDetectionResult {
+  data: {
+    isFake: boolean;
+    probability: number;
+    reason: string[];
+  };
+}
+
 const API_BASE = '/api/v1/reviews';
 
 @Injectable({ providedIn: 'root' })
@@ -80,5 +88,12 @@ export class ReviewService {
    */
   deleteReview(reviewId: string): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/${reviewId}`);
+  }
+
+  /**
+   * Ad-hoc check to see if a review is fake.
+   */
+  checkFakeReview(text: string, hasImage: boolean = false): Observable<FakeReviewDetectionResult> {
+    return this.http.post<FakeReviewDetectionResult>(`${API_BASE}/check-fake`, { text, hasImage });
   }
 }

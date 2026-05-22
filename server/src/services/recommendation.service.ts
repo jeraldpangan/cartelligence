@@ -25,6 +25,7 @@ function mapRowToProduct(row: Record<string, unknown>): Product {
     description: (row.description as string) || '',
     nutritionalInfo: (row.nutritional_info as string) || '',
     isAvailable: row.is_available as boolean,
+    image: (row.primary_image_url as string) || null,
     createdAt: row.created_at instanceof Date
       ? (row.created_at as Date).toISOString()
       : String(row.created_at),
@@ -75,9 +76,10 @@ export class RecommendationService {
 
       // Get top products from purchase history, excluding dismissed ones
       const result = await this.pool.query(
-        `SELECT p.*
+        `SELECT p.*, pi.url as primary_image_url
          FROM purchase_history ph
          JOIN product p ON ph.product_id = p.id
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          WHERE ph.user_id = $1
            AND p.is_available = true
            AND p.id NOT IN (
@@ -121,9 +123,10 @@ export class RecommendationService {
       // Strategy: find users who bought the same products as in the cart,
       // then find other products those users also bought frequently.
       const result = await this.pool.query(
-        `SELECT p.*, SUM(ph.purchase_count) as co_occurrence_score
+        `SELECT p.*, pi.url as primary_image_url, SUM(ph.purchase_count) as co_occurrence_score
          FROM purchase_history ph
          JOIN product p ON ph.product_id = p.id
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          WHERE ph.user_id IN (
            SELECT DISTINCT ph2.user_id
            FROM purchase_history ph2
@@ -176,10 +179,11 @@ export class RecommendationService {
       // Find related products: combine category affinity with purchase correlation.
       // Priority: products in the same category that are also frequently co-purchased.
       const result = await this.pool.query(
-        `SELECT p.*, 
+        `SELECT p.*, pi.url as primary_image_url,
            CASE WHEN p.category = $2 THEN 2 ELSE 0 END +
            COALESCE(co.co_score, 0) as relevance_score
          FROM product p
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          LEFT JOIN (
            SELECT ph2.product_id, SUM(ph2.purchase_count) as co_score
            FROM purchase_history ph2
@@ -245,9 +249,10 @@ export class RecommendationService {
 
       // Find products appearing in at least 2 of those orders, excluding dismissed
       const result = await this.pool.query(
-        `SELECT p.*, COUNT(DISTINCT oi.order_id) as order_appearances
+        `SELECT p.*, pi.url as primary_image_url, COUNT(DISTINCT oi.order_id) as order_appearances
          FROM order_item oi
          JOIN product p ON oi.product_id = p.id
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          WHERE oi.order_id = ANY($1::uuid[])
            AND p.is_available = true
            AND p.id NOT IN (
@@ -303,8 +308,9 @@ export class RecommendationService {
   async getFallback(): Promise<RecommendationResult> {
     try {
       const result = await this.pool.query(
-        `SELECT p.*, COALESCE(SUM(ph.purchase_count), 0) as total_purchases
+        `SELECT p.*, pi.url as primary_image_url, COALESCE(SUM(ph.purchase_count), 0) as total_purchases
          FROM product p
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          LEFT JOIN purchase_history ph ON p.id = ph.product_id
          WHERE p.is_available = true
          GROUP BY p.id
@@ -452,10 +458,12 @@ export class RecommendationService {
       // Fetch all available products with average ratings and seller reliability
       const result = await this.pool.query(
         `SELECT p.*, 
+                pi.url as primary_image_url,
                 COALESCE(up.seller_reliability, 4.5) as seller_reliability,
                 COALESCE(avg_rev.avg_rating, 4.0) as avg_rating,
                 COALESCE(ph.purchase_count, 0) as user_purchases
          FROM product p
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          LEFT JOIN user_profile up ON p.seller_id = up.id
          LEFT JOIN (
            SELECT product_id, AVG(rating) as avg_rating 

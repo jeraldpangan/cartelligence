@@ -7,6 +7,7 @@ import ordersRoutes from './orders.routes';
 import deliveryRoutes from './delivery.routes';
 import sellerProductsRoutes from './seller-products.routes';
 import sellerOrdersRoutes from './seller-orders.routes';
+import sellerRoutes from './seller.routes';
 import reviewsRoutes from './reviews.routes';
 import chatbotRoutes from './chatbot.routes';
 
@@ -26,6 +27,7 @@ router.use('/orders', ordersRoutes);
 router.use('/delivery', deliveryRoutes);
 router.use('/seller/products', sellerProductsRoutes);
 router.use('/seller/orders', sellerOrdersRoutes);
+router.use('/seller', sellerRoutes); // Mounts /seller/register
 router.use('/reviews', reviewsRoutes);
 router.use('/chatbot', chatbotRoutes);
 

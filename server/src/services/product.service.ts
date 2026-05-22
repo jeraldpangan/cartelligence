@@ -15,10 +15,10 @@ const CACHE_TTL_SECONDS = 300;
 
 /** Cache key prefixes */
 const CACHE_PREFIX = {
-  CATEGORIES: 'products:categories',
-  BY_CATEGORY: 'products:category',
-  SEARCH: 'products:search',
-  PRODUCT: 'products:detail',
+  CATEGORIES: 'products:categories:v2',
+  BY_CATEGORY: 'products:category:v2',
+  SEARCH: 'products:search:v2',
+  PRODUCT: 'products:detail:v2',
 };
 
 /**
@@ -57,6 +57,7 @@ function mapRowToProduct(row: Record<string, unknown>): Product {
     description: (row.description as string) || '',
     nutritionalInfo: (row.nutritional_info as string) || '',
     isAvailable: row.is_available as boolean,
+    image: (row.primary_image_url as string) || null,
     createdAt: (row.created_at as Date).toISOString(),
     updatedAt: (row.updated_at as Date).toISOString(),
   };
@@ -145,10 +146,12 @@ export class ProductService {
       // 2. Fetch all matching products with seller reliability and avg reviews
       const result = await this.pool.query(
         `SELECT p.*, 
+                pi.url as primary_image_url,
                 COALESCE(up.seller_reliability, 4.5) as seller_reliability,
                 COALESCE(avg_rev.avg_rating, 4.0) as avg_rating,
                 COALESCE(ph.purchase_count, 0) as user_purchases
          FROM product p
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          LEFT JOIN user_profile up ON p.seller_id = up.id
          LEFT JOIN (
            SELECT product_id, AVG(rating) as avg_rating 
@@ -219,7 +222,9 @@ export class ProductService {
       totalItems = parseInt(countResult.rows[0].total, 10);
 
       const result = await this.pool.query(
-        `SELECT * FROM product 
+        `SELECT p.*, pi.url as primary_image_url 
+         FROM product p 
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          WHERE category = $1 AND is_available = true 
          ORDER BY name ASC 
          LIMIT $2 OFFSET $3`,
@@ -305,10 +310,12 @@ export class ProductService {
       // 2. Fetch all matching products with seller reliability and avg reviews
       const result = await this.pool.query(
         `SELECT p.*, 
+                pi.url as primary_image_url,
                 COALESCE(up.seller_reliability, 4.5) as seller_reliability,
                 COALESCE(avg_rev.avg_rating, 4.0) as avg_rating,
                 COALESCE(ph.purchase_count, 0) as user_purchases
          FROM product p
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          LEFT JOIN user_profile up ON p.seller_id = up.id
          LEFT JOIN (
            SELECT product_id, AVG(rating) as avg_rating 
@@ -379,7 +386,9 @@ export class ProductService {
       totalItems = parseInt(countResult.rows[0].total, 10);
 
       const result = await this.pool.query(
-        `SELECT * FROM product 
+        `SELECT p.*, pi.url as primary_image_url 
+         FROM product p 
+         LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
          WHERE name ILIKE $1 AND is_available = true 
          ORDER BY name ASC 
          LIMIT $2 OFFSET $3`,
@@ -420,7 +429,10 @@ export class ProductService {
     }
 
     const result = await this.pool.query(
-      'SELECT * FROM product WHERE id = $1',
+      `SELECT p.*, pi.url as primary_image_url 
+       FROM product p 
+       LEFT JOIN product_image pi ON p.id = pi.product_id AND pi.is_primary = true
+       WHERE p.id = $1`,
       [id],
     );
 

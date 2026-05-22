@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Product, Order, PaginatedResponse } from '@shared/interfaces';
 import { ProductCategory, OrderStatus } from '@shared/enums';
 
@@ -86,21 +87,24 @@ export class SellerService {
    * Returns a single product owned by the authenticated seller.
    */
   getProduct(id: string): Observable<SellerProduct> {
-    return this.http.get<SellerProduct>(`${this.productsUrl}/${id}`);
+    return this.http.get<{ data: SellerProduct }>(`${this.productsUrl}/${id}`).pipe(
+      map(res => res.data)
+    );
   }
 
   /**
    * Creates a new product. Images are included in the FormData payload.
    */
   createProduct(formData: FormData): Observable<SellerProduct> {
-    return this.http.post<SellerProduct>(this.productsUrl, formData);
+    return this.http.post<{ data: SellerProduct }>(this.productsUrl, formData).pipe(
+      map(res => res.data)
+    );
   }
 
-  /**
-   * Updates an existing product owned by the authenticated seller.
-   */
-  updateProduct(id: string, dto: UpdateProductDto): Observable<SellerProduct> {
-    return this.http.put<SellerProduct>(`${this.productsUrl}/${id}`, dto);
+  updateProduct(id: string, payload: UpdateProductDto | FormData): Observable<SellerProduct> {
+    return this.http.put<{ data: SellerProduct }>(`${this.productsUrl}/${id}`, payload).pipe(
+      map(res => res.data)
+    );
   }
 
   /**
@@ -114,7 +118,9 @@ export class SellerService {
    * Toggles the availability flag of a product.
    */
   toggleAvailability(id: string): Observable<SellerProduct> {
-    return this.http.patch<SellerProduct>(`${this.productsUrl}/${id}/availability`, {});
+    return this.http.patch<{ data: SellerProduct }>(`${this.productsUrl}/${id}/availability`, {}).pipe(
+      map(res => res.data)
+    );
   }
 
   // ─── Orders ──────────────────────────────────────────────────────────────────

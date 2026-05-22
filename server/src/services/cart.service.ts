@@ -346,8 +346,8 @@ export class SmartCartService {
     const costBreakdown = calculateCostBreakdown(items);
 
     const fullCart: Cart = {
-      id: cart.id,
-      userId: cart.user_id,
+      id: cart.id as string,
+      userId: cart.user_id as string,
       items,
       costBreakdown,
       createdAt: cart.created_at instanceof Date

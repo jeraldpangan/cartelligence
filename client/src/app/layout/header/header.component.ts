@@ -11,6 +11,7 @@ import { AuthService } from '../../auth/auth.service';
 import { CartService } from '../../cart/cart.service';
 import { ChatbotService, ChatMessage } from '../../core/chatbot.service';
 import { CatalogService } from '../../catalog/catalog.service';
+import { ReviewService } from '../../reviews/review.service';
 import { UserRole } from '@shared/enums';
 import { UserSurveyComponent } from '../../buyer/user-survey/user-survey.component';
 
@@ -61,9 +62,14 @@ export class HeaderComponent implements OnInit {
   private readonly cartService = inject(CartService);
   private readonly chatbotService = inject(ChatbotService);
   private readonly catalogService = inject(CatalogService);
+  private readonly reviewService = inject(ReviewService);
 
   searchControl = new FormControl('');
   chatControl = new FormControl('');
+  fakeReviewControl = new FormControl('');
+
+  fakeReviewResult = signal<any | null>(null);
+  isCheckingFakeReview = signal(false);
 
   ngOnInit(): void {
     // Sync search control with URL query param if present
@@ -265,6 +271,30 @@ export class HeaderComponent implements OnInit {
     if (container) {
       container.scrollTop = container.scrollHeight;
     }
+  }
+
+  checkFakeReview(): void {
+    const text = this.fakeReviewControl.value?.trim();
+    if (!text) return;
+
+    this.isCheckingFakeReview.set(true);
+    this.fakeReviewResult.set(null);
+
+    this.reviewService.checkFakeReview(text).subscribe({
+      next: (res) => {
+        this.fakeReviewResult.set(res.data);
+        this.isCheckingFakeReview.set(false);
+      },
+      error: (err) => {
+        console.error('[Header] Failed to check fake review:', err);
+        this.isCheckingFakeReview.set(false);
+      }
+    });
+  }
+
+  resetFakeReviewChecker(): void {
+    this.fakeReviewControl.setValue('');
+    this.fakeReviewResult.set(null);
   }
 }
 

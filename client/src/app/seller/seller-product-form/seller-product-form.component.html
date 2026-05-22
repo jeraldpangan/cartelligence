@@ -1,50 +1,119 @@
-<mat-card class="product-card">
-  <h2>Add Product</h2>
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <mat-form-field appearance="outline" class="full">
-      <mat-label>Product Name</mat-label>
-      <input matInput formControlName="name" />
-    </mat-form-field>
+<div class="page-container">
+  <div class="form-header">
+    <button mat-icon-button class="back-btn" routerLink="/seller/products" aria-label="Go back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Add New Product</h1>
+  </div>
 
-    <div class="row">
-      <mat-form-field appearance="outline">
-        <mat-label>Price</mat-label>
-        <input matInput type="number" formControlName="price" />
-      </mat-form-field>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="stylized-form">
+    <div class="content-grid">
+      
+      <!-- Left Column: Primary Details -->
+      <div class="details-section">
+        <mat-card class="premium-card">
+          <mat-card-header>
+            <mat-card-title>Product Details</mat-card-title>
+            <mat-card-subtitle>Provide clear, accurate details to attract buyers.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content class="card-body">
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Product Name</mat-label>
+              <input matInput formControlName="name" placeholder="e.g. Organic Avocados" />
+              <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+            </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Quantity</mat-label>
-        <input matInput type="number" formControlName="quantity" />
-      </mat-form-field>
-    </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Category</mat-label>
+                <mat-select formControlName="category">
+                  <mat-option *ngFor="let cat of categories" [value]="cat">
+                    <!-- Capitalize first letter -->
+                    {{ cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ') }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
 
-    <div class="row">
-      <mat-form-field appearance="outline">
-        <mat-label>Color</mat-label>
-        <input matInput formControlName="color" />
-      </mat-form-field>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Unit Type</mat-label>
+                <input matInput formControlName="unit" placeholder="e.g. kg, piece, pack" />
+              </mat-form-field>
+            </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Size</mat-label>
-        <input matInput formControlName="size" />
-      </mat-form-field>
-    </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Unit Price (₱)</mat-label>
+                <input matInput type="number" formControlName="unitPrice" placeholder="0.00" />
+                <span matTextPrefix>₱&nbsp;</span>
+              </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full">
-      <mat-label>Description</mat-label>
-      <textarea matInput formControlName="description" rows="4"></textarea>
-    </mat-form-field>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Stock Quantity</mat-label>
+                <input matInput type="number" formControlName="stockQuantity" placeholder="1" />
+              </mat-form-field>
+            </div>
 
-    <div class="file-input">
-      <label>Images</label>
-      <input type="file" (change)="onFiles($event)" multiple accept="image/*" />
-      <div class="previews">
-        <img *ngFor="let p of previews" [src]="p" />
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="5" placeholder="Describe your product..."></textarea>
+            </mat-form-field>
+
+          </mat-card-content>
+        </mat-card>
       </div>
-    </div>
 
-    <div class="actions">
-      <button mat-flat-button color="primary" type="submit" [disabled]="submitting">Save Product</button>
+      <!-- Right Column: Images -->
+      <div class="media-section">
+        <mat-card class="premium-card">
+          <mat-card-header>
+            <mat-card-title>Product Media</mat-card-title>
+            <mat-card-subtitle>Upload up to 5 images (JPEG, PNG). Max 5MB each.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            
+            <div class="upload-zone" 
+                 [class.dragging]="isDragging"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)"
+                 (click)="triggerFileInput()">
+              <input type="file" #fileInput (change)="onFileChange($event)" multiple accept="image/jpeg, image/png, image/webp" class="hidden-input" />
+              
+              <div class="upload-prompt">
+                <div class="icon-circle">
+                  <mat-icon>cloud_upload</mat-icon>
+                </div>
+                <h3>Drag & drop images here</h3>
+                <p>or click to browse from your device</p>
+                <span class="image-count">{{ images.length }} / 5 uploaded</span>
+              </div>
+            </div>
+
+            <div class="image-previews" *ngIf="previews.length > 0">
+              <div class="preview-item" *ngFor="let p of previews; let i = index">
+                <img [src]="p.url" [alt]="p.name" />
+                <button type="button" mat-mini-fab color="warn" class="remove-btn" (click)="removeImage(i)">
+                  <mat-icon>close</mat-icon>
+                </button>
+                <div class="primary-badge" *ngIf="i === 0">Primary</div>
+              </div>
+            </div>
+
+          </mat-card-content>
+        </mat-card>
+
+        <div class="form-actions">
+          <button mat-button type="button" routerLink="/seller/products">Cancel</button>
+          <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="submitting || form.invalid">
+            <mat-icon *ngIf="!submitting">save</mat-icon>
+            <mat-icon *ngIf="submitting" class="spinner">autorenew</mat-icon>
+            {{ submitting ? 'Saving...' : 'Publish Product' }}
+          </button>
+        </div>
+
+      </div>
+
     </div>
   </form>
-</mat-card>
+</div>
