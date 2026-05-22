@@ -239,12 +239,12 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
               };
             });
           } else {
-            this.useFallbackPremiumProducts();
+            this.flashProducts = [];
           }
           this.loadingFlash = false;
         },
         error: () => {
-          this.useFallbackPremiumProducts();
+          this.flashProducts = [];
           this.loadingFlash = false;
         }
       });

@@ -114,7 +114,7 @@ export class SmartCartComponent implements OnInit, OnDestroy {
   }
 
   onCheckout(): void {
-    this.router.navigate(['/checkout']);
+    this.router.navigate(['/orders/checkout']);
   }
 
   onContinueShopping(): void {

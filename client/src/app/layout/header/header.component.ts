@@ -236,6 +236,11 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+  viewProductDetails(productId: string): void {
+    this.isChatOpen.set(false);
+    this.router.navigate(['/catalog/product', productId]);
+  }
+
   formatPrice(amount: number): string {
     return this.cartService.formatPrice(amount);
   }

@@ -264,14 +264,14 @@
               @if (msg.products && msg.products.length > 0) {
               <div class="products-carousel">
                 @for (prod of msg.products; track prod.id) {
-                <div class="product-chat-card">
+                <div class="product-chat-card" (click)="viewProductDetails(prod.id)">
                   <div class="prod-badge">{{ prod.category }}</div>
                   <h4 class="prod-title" [title]="prod.name">{{ prod.name }}</h4>
                   <div class="prod-price">{{ formatPrice(prod.unitPrice) }} <span class="prod-unit">/ {{ prod.unit
                       }}</span></div>
 
                   <button class="prod-add-btn" [disabled]="prod.adding || prod.stockQuantity <= 0 || prod.added"
-                    (click)="addToCartFromChat(prod)">
+                    (click)="$event.stopPropagation(); addToCartFromChat(prod)">
                     @if (prod.adding) {
                     <span>Adding...</span>
                     } @else if (prod.added) {

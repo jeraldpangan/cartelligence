@@ -36,7 +36,7 @@ export class ChatbotService {
       try {
         const systemPrompt = `You are a helpful e-commerce shopping assistant for Cartelligence.
 Analyze the user's latest query, and classify their intent into one of these: 'product_search', 'order_tracking', 'sales_info', or 'general'.
-If they are searching for products, extract the primary item keywords (e.g. "milk", "apple"). Keep it to the basic product nouns.
+If they are searching for products, extract ONLY the core single noun keyword (e.g. "milk", "apple", "baby"). NEVER include generic words like "items", "stuff", "products", or "things". Keep it to the absolute most basic singular noun.
 Write a warm, conversational, friendly response to introduce what you are doing (e.g., "Certainly! Let me check our fresh catalogue for organic apples...").
 Return your response strictly in JSON format matching this schema:
 {
@@ -336,6 +336,9 @@ Return your response strictly in JSON format matching this schema:
         .replace(/suggest/g, '')
         .replace(/show me/g, '')
         .replace(/please/g, '')
+        .replace(/items/gi, '')
+        .replace(/products/gi, '')
+        .replace(/stuff/gi, '')
         .trim();
 
       // Default category/generic fallbacks if empty keyword
@@ -343,15 +346,30 @@ Return your response strictly in JSON format matching this schema:
         keyword = 'organic';
       }
 
-      const searchPattern = `%${keyword}%`;
+      // Split into individual valid words for a smarter OR search
+      const tokens = keyword.split(/\s+/).filter((t) => t.length > 2);
+      if (tokens.length === 0) tokens.push(keyword);
+
+      const conditions: string[] = [];
+      const params: any[] = [];
+
+      tokens.forEach((token, index) => {
+        const paramIdx = index + 1;
+        conditions.push(
+          `(name ILIKE $${paramIdx} OR description ILIKE $${paramIdx} OR category::text ILIKE $${paramIdx})`
+        );
+        params.push(`%${token}%`);
+      });
+
+      const whereClause = conditions.join(' OR ');
 
       const result = await this.pool.query(
         `SELECT * FROM product
-         WHERE (name ILIKE $1 OR description ILIKE $1 OR category::text ILIKE $1)
+         WHERE (${whereClause})
            AND is_available = true
          ORDER BY stock_quantity DESC, name ASC
          LIMIT 5`,
-        [searchPattern],
+        params,
       );
 
       if (result.rows.length === 0) {
