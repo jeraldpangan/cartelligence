@@ -1,0 +1,102 @@
+<div class="order-list">
+  <div class="order-list__header">
+    <h2 class="order-list__title">Orders</h2>
+    <a mat-stroked-button routerLink="/seller">
+      <mat-icon>arrow_back</mat-icon>
+      Dashboard
+    </a>
+  </div>
+
+  <!-- Status filter -->
+  <div class="order-list__filters">
+    <mat-form-field appearance="outline" class="order-list__filter-field">
+      <mat-label>Filter by Status</mat-label>
+      <mat-select [(ngModel)]="selectedStatus" (ngModelChange)="onStatusFilterChange()">
+        @for (option of statusOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (loading()) {
+    <div class="order-list__loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <div class="order-list__error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button mat-stroked-button (click)="loadOrders()">Retry</button>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="order-list__empty">
+      <mat-icon>receipt_long</mat-icon>
+      <p>No orders found</p>
+    </div>
+  } @else {
+    <div class="order-list__items">
+      @for (order of orders(); track order.id) {
+        <mat-card class="order-list__card" (click)="viewOrderDetail(order.id)">
+          <mat-card-content>
+            <div class="order-card">
+              <div class="order-card__header">
+                <div class="order-card__id">
+                  <span class="order-card__number">{{ order.orderNumber }}</span>
+                  <span class="order-card__status" [class]="getStatusClass(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </div>
+                <div class="order-card__total">{{ formatPrice(order.grandTotal) }}</div>
+              </div>
+
+              <div class="order-card__buyer">
+                <mat-icon class="order-card__icon">person</mat-icon>
+                <span>{{ order.buyerName }}</span>
+                <span class="order-card__buyer-email">{{ order.buyerEmail }}</span>
+              </div>
+
+              <div class="order-card__items">
+                <mat-icon class="order-card__icon">shopping_bag</mat-icon>
+                <span>
+                  {{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }}:
+                  @for (item of order.items.slice(0, 3); track item.id) {
+                    <span class="order-card__item-name">{{ item.productName }}</span>
+                    @if ($index < order.items.slice(0, 3).length - 1) {, }
+                  }
+                  @if (order.items.length > 3) {
+                    <span class="order-card__more">+{{ order.items.length - 3 }} more</span>
+                  }
+                </span>
+              </div>
+
+              <div class="order-card__footer">
+                <span class="order-card__date">
+                  <mat-icon class="order-card__icon">schedule</mat-icon>
+                  {{ order.createdAt | date: 'MMM d, y, h:mm a' }}
+                </span>
+                <button
+                  mat-icon-button
+                  matTooltip="View details"
+                  (click)="viewOrderDetail(order.id); $event.stopPropagation()"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <mat-paginator
+      class="order-list__paginator"
+      [length]="totalItems()"
+      [pageSize]="pageSize"
+      [pageIndex]="currentPage() - 1"
+      [hidePageSize]="true"
+      (page)="onPageChange($event)"
+      aria-label="Select page of orders"
+    />
+  }
+</div>

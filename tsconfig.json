@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "references": [
+    { "path": "./server" },
+    { "path": "./shared" }
+  ],
+  "files": [],
+  "exclude": ["node_modules"]
+}

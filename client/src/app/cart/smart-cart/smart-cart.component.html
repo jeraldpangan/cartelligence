@@ -1,0 +1,84 @@
+<div class="smart-cart">
+  <div class="smart-cart__header">
+    <h1 class="smart-cart__title">
+      <mat-icon class="smart-cart__title-icon">shopping_cart</mat-icon>
+      Your Cart
+    </h1>
+    @if (cart && !isEmpty) {
+      <span class="smart-cart__count">{{ itemCount }} {{ itemCount === 1 ? 'item' : 'items' }}</span>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="smart-cart__loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="smart-cart__error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-stroked-button (click)="loadCart()">Retry</button>
+    </div>
+  }
+
+  @if (!loading && !error && isEmpty) {
+    <div class="smart-cart__empty" role="status">
+      <mat-icon class="smart-cart__empty-icon">remove_shopping_cart</mat-icon>
+      <p class="smart-cart__empty-text">Your cart is empty</p>
+      <button mat-flat-button class="smart-cart__shop-btn" (click)="onContinueShopping()">
+        Browse Products
+      </button>
+    </div>
+  }
+
+  @if (!loading && !error && !isEmpty && cart) {
+    <div class="smart-cart__content">
+      <div class="smart-cart__items-section">
+        <div class="smart-cart__items" role="list" aria-label="Cart items">
+          @for (item of cart.items; track item.id) {
+            <app-cart-item
+              [item]="item"
+              (quantityChanged)="onQuantityChanged($event)"
+              (itemRemoved)="onItemRemoved($event)"
+            />
+          }
+        </div>
+
+        <app-recommendation-panel
+          [cartItemCount]="itemCount"
+          (addToCart)="onRecommendationAdded($event)"
+        />
+      </div>
+
+      <div class="smart-cart__summary-section">
+        <app-cost-breakdown [costBreakdown]="cart.costBreakdown" />
+
+        <div class="smart-cart__actions">
+          <button
+            mat-flat-button
+            class="smart-cart__checkout-btn"
+            (click)="onCheckout()"
+            [disabled]="updating"
+          >
+            Proceed to Checkout
+          </button>
+          <button
+            mat-stroked-button
+            class="smart-cart__continue-btn"
+            (click)="onContinueShopping()"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (updating) {
+      <div class="smart-cart__updating-overlay" aria-live="polite">
+        <mat-spinner diameter="24"></mat-spinner>
+      </div>
+    }
+  }
+</div>

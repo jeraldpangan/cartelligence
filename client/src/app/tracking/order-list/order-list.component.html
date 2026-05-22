@@ -1,0 +1,38 @@
+<div class="order-list">
+  <div class="order-list__header">
+    <h2 class="order-list__title">Active Orders</h2>
+    <app-offline-indicator />
+  </div>
+
+  @if (loading()) {
+    <div class="order-list__loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <div class="order-list__error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="order-list__empty">
+      <mat-icon>receipt_long</mat-icon>
+      <p>No active orders</p>
+    </div>
+  } @else {
+    <div class="order-list__items">
+      @for (order of orders(); track order.id) {
+        <mat-card class="order-list__card">
+          <mat-card-content>
+            <app-order-tracker
+              [currentStatus]="getOrderStatus(order)"
+              [orderNumber]="order.orderNumber"
+            />
+            @if (isOutForDelivery(order)) {
+              <app-eta-display [estimatedArrival]="getOrderETA(order)" />
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

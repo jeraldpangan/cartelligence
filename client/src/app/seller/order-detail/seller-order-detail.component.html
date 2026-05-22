@@ -1,0 +1,168 @@
+<div class="order-detail">
+  <div class="order-detail__header">
+    <a mat-stroked-button routerLink="/seller/orders">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Orders
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="order-detail__loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <div class="order-detail__error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button mat-stroked-button (click)="retryLoad()">
+        Retry
+      </button>
+    </div>
+  } @else if (order()) {
+    <div class="order-detail__content">
+
+      <!-- Order summary card -->
+      <mat-card class="order-detail__card">
+        <mat-card-header>
+          <mat-card-title>Order {{ order()!.orderNumber }}</mat-card-title>
+          <mat-card-subtitle>
+            Placed on {{ order()!.createdAt | date: 'MMMM d, y, h:mm a' }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="order-summary">
+            <div class="order-summary__status">
+              <span class="status-badge" [class]="getStatusClass(order()!.status)">
+                {{ getStatusLabel(order()!.status) }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Buyer info card -->
+      <mat-card class="order-detail__card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>person</mat-icon>
+            Buyer Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-grid__item">
+              <span class="info-grid__label">Name</span>
+              <span class="info-grid__value">{{ order()!.buyerName }}</span>
+            </div>
+            <div class="info-grid__item">
+              <span class="info-grid__label">Email</span>
+              <span class="info-grid__value">{{ order()!.buyerEmail }}</span>
+            </div>
+            <div class="info-grid__item">
+              <span class="info-grid__label">Delivery Address</span>
+              <span class="info-grid__value">{{ order()!.deliveryAddress }}</span>
+            </div>
+            <div class="info-grid__item">
+              <span class="info-grid__label">Delivery Window</span>
+              <span class="info-grid__value">
+                {{ order()!.scheduledDeliveryStart | date: 'MMM d, y, h:mm a' }}
+                –
+                {{ order()!.scheduledDeliveryEnd | date: 'h:mm a' }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Order items card -->
+      <mat-card class="order-detail__card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>shopping_bag</mat-icon>
+            Order Items
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="items-list">
+            @for (item of order()!.items; track item.id) {
+              <div class="items-list__row">
+                <div class="items-list__name">{{ item.productName }}</div>
+                <div class="items-list__qty">× {{ item.quantity }}</div>
+                <div class="items-list__price">
+                  {{ formatPrice(item.unitPriceAtPurchase) }} each
+                </div>
+                <div class="items-list__subtotal">{{ formatPrice(item.subtotal) }}</div>
+              </div>
+              <mat-divider />
+            }
+          </div>
+
+          <div class="order-totals">
+            <div class="order-totals__row">
+              <span>Subtotal</span>
+              <span>{{ formatPrice(order()!.subtotal) }}</span>
+            </div>
+            <div class="order-totals__row">
+              <span>Delivery Fee</span>
+              <span>{{ formatPrice(order()!.deliveryFee) }}</span>
+            </div>
+            @if (order()!.discount > 0) {
+              <div class="order-totals__row order-totals__row--discount">
+                <span>Discount</span>
+                <span>-{{ formatPrice(order()!.discount) }}</span>
+              </div>
+            }
+            <mat-divider />
+            <div class="order-totals__row order-totals__row--total">
+              <span>Grand Total</span>
+              <span>{{ formatPrice(order()!.grandTotal) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Status transition card -->
+      <mat-card class="order-detail__card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>update</mat-icon>
+            Update Order Status
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (isTerminalStatus(order()!.status)) {
+            <p class="status-actions__terminal">
+              <mat-icon>check_circle</mat-icon>
+              This order is in a terminal state ({{ getStatusLabel(order()!.status) }}) and cannot
+              be updated further.
+            </p>
+          } @else {
+            <p class="status-actions__hint">
+              Current status: <strong>{{ getStatusLabel(order()!.status) }}</strong>.
+              Select a new status to transition this order.
+            </p>
+            <div class="status-actions__buttons">
+              @for (nextStatus of getAvailableTransitions(order()!.status); track nextStatus) {
+                <button
+                  mat-flat-button
+                  [color]="nextStatus === 'cancelled' ? 'warn' : 'primary'"
+                  [disabled]="updating()"
+                  (click)="onTransitionClick(nextStatus)"
+                  [matTooltip]="'Move order to: ' + getStatusLabel(nextStatus)"
+                >
+                  @if (updating()) {
+                    <mat-spinner diameter="18" />
+                  } @else {
+                    <mat-icon>{{ nextStatus === 'cancelled' ? 'cancel' : 'arrow_forward' }}</mat-icon>
+                  }
+                  {{ getStatusLabel(nextStatus) }}
+                </button>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  }
+</div>

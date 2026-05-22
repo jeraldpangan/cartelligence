@@ -1,0 +1,158 @@
+<div class="payment">
+  <h3 class="payment__title">Payment Method</h3>
+
+  <mat-radio-group
+    class="payment__methods"
+    [value]="selectedMethod()"
+    (change)="selectMethod($event.value)"
+    aria-label="Select payment method"
+  >
+    <mat-radio-button value="credit_debit_card" class="payment__method-option">
+      <div class="payment__method-label">
+        <mat-icon>credit_card</mat-icon>
+        <span>Credit / Debit Card</span>
+      </div>
+    </mat-radio-button>
+    <mat-radio-button value="digital_wallet" class="payment__method-option">
+      <div class="payment__method-label">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span>Digital Wallet</span>
+      </div>
+    </mat-radio-button>
+  </mat-radio-group>
+
+  @if (errorMessage()) {
+    <div class="payment__error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <div class="payment__error-content">
+        <p class="payment__error-message">{{ errorMessage() }}</p>
+        @if (canRetry) {
+          <p class="payment__error-retry">
+            {{ retriesRemaining }} {{ retriesRemaining === 1 ? 'attempt' : 'attempts' }} remaining
+          </p>
+        } @else {
+          <p class="payment__error-retry">No more attempts available. Please re-initiate checkout.</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (selectedMethod() === 'credit_debit_card') {
+    <form [formGroup]="cardForm" class="payment__form" (ngSubmit)="submitPayment()">
+      <mat-form-field appearance="outline" class="payment__field">
+        <mat-label>Card Number</mat-label>
+        <input
+          matInput
+          formControlName="cardNumber"
+          placeholder="1234567890123456"
+          maxlength="16"
+          autocomplete="cc-number"
+        />
+        @if (cardForm.get('cardNumber')?.hasError('required') && cardForm.get('cardNumber')?.touched) {
+          <mat-error>Card number is required</mat-error>
+        }
+        @if (cardForm.get('cardNumber')?.hasError('pattern') && cardForm.get('cardNumber')?.touched) {
+          <mat-error>Enter a valid 16-digit card number</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="payment__row">
+        <mat-form-field appearance="outline" class="payment__field payment__field--half">
+          <mat-label>Expiry Date</mat-label>
+          <input
+            matInput
+            formControlName="expiryDate"
+            placeholder="MM/YY"
+            maxlength="5"
+            autocomplete="cc-exp"
+          />
+          @if (cardForm.get('expiryDate')?.hasError('required') && cardForm.get('expiryDate')?.touched) {
+            <mat-error>Expiry date is required</mat-error>
+          }
+          @if (cardForm.get('expiryDate')?.hasError('pattern') && cardForm.get('expiryDate')?.touched) {
+            <mat-error>Use MM/YY format</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="payment__field payment__field--half">
+          <mat-label>CVV</mat-label>
+          <input
+            matInput
+            formControlName="cvv"
+            placeholder="123"
+            maxlength="4"
+            type="password"
+            autocomplete="cc-csc"
+          />
+          @if (cardForm.get('cvv')?.hasError('required') && cardForm.get('cvv')?.touched) {
+            <mat-error>CVV is required</mat-error>
+          }
+          @if (cardForm.get('cvv')?.hasError('pattern') && cardForm.get('cvv')?.touched) {
+            <mat-error>Enter a valid CVV</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="payment__field">
+        <mat-label>Cardholder Name</mat-label>
+        <input
+          matInput
+          formControlName="cardholderName"
+          placeholder="John Doe"
+          autocomplete="cc-name"
+        />
+        @if (cardForm.get('cardholderName')?.hasError('required') && cardForm.get('cardholderName')?.touched) {
+          <mat-error>Cardholder name is required</mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        mat-flat-button
+        type="submit"
+        class="payment__submit"
+        [disabled]="processing() || !canRetry"
+      >
+        @if (processing()) {
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Processing...</span>
+        } @else {
+          <span>Pay Now</span>
+        }
+      </button>
+    </form>
+  }
+
+  @if (selectedMethod() === 'digital_wallet') {
+    <form [formGroup]="walletForm" class="payment__form" (ngSubmit)="submitPayment()">
+      <mat-form-field appearance="outline" class="payment__field">
+        <mat-label>Wallet Email / ID</mat-label>
+        <input
+          matInput
+          formControlName="walletId"
+          placeholder="your@email.com"
+          autocomplete="email"
+        />
+        @if (walletForm.get('walletId')?.hasError('required') && walletForm.get('walletId')?.touched) {
+          <mat-error>Wallet ID is required</mat-error>
+        }
+        @if (walletForm.get('walletId')?.hasError('email') && walletForm.get('walletId')?.touched) {
+          <mat-error>Enter a valid email address</mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        mat-flat-button
+        type="submit"
+        class="payment__submit"
+        [disabled]="processing() || !canRetry"
+      >
+        @if (processing()) {
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Processing...</span>
+        } @else {
+          <span>Pay Now</span>
+        }
+      </button>
+    </form>
+  }
+</div>

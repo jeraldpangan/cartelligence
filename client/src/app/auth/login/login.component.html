@@ -1,0 +1,161 @@
+<div class="login-page-wrapper">
+  <!-- Top Header -->
+  <header class="login-header">
+    <div class="logo-container">
+      @if (logoFailed()) {
+        <!-- SVG Mascot Fallback -->
+        <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+          <circle cx="35" cy="85" r="8" fill="#166fe5" />
+          <circle cx="75" cy="85" r="8" fill="#166fe5" />
+          <circle cx="35" cy="85" r="4" fill="#ffffff" />
+          <circle cx="75" cy="85" r="4" fill="#ffffff" />
+          <path d="M30 65L35 77M70 65L75 77" stroke="#166fe5" stroke-width="4" stroke-linecap="round"/>
+          <rect x="20" y="25" width="60" height="40" rx="10" fill="#e1eeff" stroke="#166fe5" stroke-width="4"/>
+          <path d="M15 32H20M15 32L10 20M10 20H2" stroke="#166fe5" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="40" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff"/>
+          <circle cx="60" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff"/>
+          <path d="M50 42H52" stroke="#166fe5" stroke-width="4"/>
+          <path d="M37 42C37 40 43 40 43 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round"/>
+          <path d="M57 42C57 40 63 40 63 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round"/>
+          <path d="M44 54C44 58 56 58 56 54" stroke="#166fe5" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      } @else {
+        <!-- Custom logo.png with SVG fallback -->
+        <img
+          src="/logo.png"
+          alt="Cartelligence Logo"
+          class="logo-img"
+          (error)="logoFailed.set(true)"
+        />
+      }
+      <span class="brand-name">Cartelligence</span>
+    </div>
+
+    <a href="javascript:void(0)" class="help-link" aria-label="Help">
+      <span>Help</span>
+      <mat-icon class="help-icon">help_outline</mat-icon>
+    </a>
+  </header>
+
+  <!-- Central Split Layout -->
+  <main class="login-split-container">
+    <!-- Left Campaign Card -->
+    <section class="campaign-pane" aria-labelledby="campaign-heading">
+      <div class="campaign-bg-wrapper">
+        <img src="/smart_lifestyle_hero.png" alt="Smart Lifestyle Premium Essentials Campaign" class="campaign-img" />
+      </div>
+      <div class="campaign-overlay">
+        <h2 id="campaign-heading" class="campaign-title">Empowering Your Smart Lifestyle</h2>
+        <p class="campaign-desc">
+          Access your personalized catalog, discover smart recommendations, track your deliveries in real time, and manage your intelligent shopping experience.
+        </p>
+      </div>
+    </section>
+
+    <!-- Right Sign-In Card -->
+    <section class="form-pane" aria-labelledby="form-title">
+      <div class="login-card-wrapper">
+        <h1 id="form-title" class="welcome-title">Welcome Back</h1>
+        <p class="welcome-subtitle">Sign in to continue to Cartelligence.</p>
+
+        @if (errorMessage()) {
+          <div class="error-banner" role="alert">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        @if (isLockedOut()) {
+          <div class="lockout-banner" role="alert">
+            <mat-icon>lock</mat-icon>
+            <span>{{ lockoutMessage() }}</span>
+          </div>
+        }
+
+        <!-- Interactive Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="signin-form">
+          <!-- Email input group -->
+          <div class="input-group">
+            <label class="custom-label" for="email-field">Email or Username</label>
+            <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="input-icon">mail_outline</mat-icon>
+              <input
+                matInput
+                id="email-field"
+                type="email"
+                formControlName="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+              />
+            </mat-form-field>
+            @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
+              <span class="field-error-text">Email is required</span>
+            }
+            @if (loginForm.get('email')?.hasError('pattern') && loginForm.get('email')?.touched) {
+              <span class="field-error-text">Please enter a valid email address</span>
+            }
+          </div>
+
+          <!-- Password input group -->
+          <div class="input-group">
+            <div class="label-row">
+              <label class="custom-label" for="password-field">Password</label>
+              <a routerLink="/password-reset" class="forgot-password-link">Forgot Password?</a>
+            </div>
+            <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="input-icon">lock_outline</mat-icon>
+              <input
+                matInput
+                id="password-field"
+                [type]="hidePassword() ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+                class="visibility-toggle"
+              >
+                <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+              <span class="field-error-text">Password is required</span>
+            }
+          </div>
+
+          <!-- Remember me checkbox -->
+          <div class="remember-me-row">
+            <mat-checkbox color="primary" class="remember-checkbox">
+              <span class="checkbox-label">Remember me</span>
+            </mat-checkbox>
+          </div>
+
+          <!-- Sign In Button -->
+          <button
+            mat-flat-button
+            class="full-width submit-button"
+            type="submit"
+            [disabled]="isLoading() || isLockedOut()"
+          >
+            @if (isLoading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Sign In
+            }
+          </button>
+        </form>
+
+        <!-- Create Account Link -->
+        <div class="signup-redirect">
+          <span>Don't have an account?</span>
+          <a routerLink="/register" class="signup-link">Sign up</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,172 @@
+<div class="checkout">
+  <h2 class="checkout__title">Checkout</h2>
+
+  @if (loading) {
+    <div class="checkout__loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Preparing your order...</p>
+    </div>
+  }
+
+  @if (errorMessage && !loading && stockConflicts.length === 0) {
+    <div class="checkout__error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+      @if (!checkoutSummary) {
+        <a mat-button routerLink="/cart">Go to Cart</a>
+      }
+    </div>
+  }
+
+  @if (stockConflicts.length > 0) {
+    <div class="checkout__stock-conflict" role="alert">
+      <mat-icon>warning</mat-icon>
+      <div class="checkout__stock-conflict-content">
+        <p class="checkout__stock-conflict-title">Stock Unavailable</p>
+        <p>{{ errorMessage }}</p>
+        <ul class="checkout__stock-conflict-list">
+          @for (item of stockConflicts; track item.productId) {
+            <li>
+              <strong>{{ item.productName }}</strong>:
+              requested {{ item.requestedQuantity }}, only {{ item.availableQuantity }} available
+            </li>
+          }
+        </ul>
+        <a mat-stroked-button routerLink="/cart" class="checkout__stock-conflict-link">
+          Update Cart
+        </a>
+      </div>
+    </div>
+  }
+
+  @if (!loading && checkoutSummary && stockConflicts.length === 0) {
+    <div class="checkout__steps">
+      <div class="checkout__step-indicators">
+        <button
+          class="checkout__step-indicator"
+          [class.checkout__step-indicator--active]="currentStep === 0"
+          [class.checkout__step-indicator--completed]="currentStep > 0"
+          (click)="goBack(0)"
+          [attr.aria-current]="currentStep === 0 ? 'step' : null"
+        >
+          <span class="checkout__step-number">1</span>
+          <span class="checkout__step-label">Review</span>
+        </button>
+        <div class="checkout__step-connector"></div>
+        <button
+          class="checkout__step-indicator"
+          [class.checkout__step-indicator--active]="currentStep === 1"
+          [class.checkout__step-indicator--completed]="currentStep > 1"
+          (click)="currentStep > 1 ? goBack(1) : null"
+          [disabled]="currentStep < 1"
+          [attr.aria-current]="currentStep === 1 ? 'step' : null"
+        >
+          <span class="checkout__step-number">2</span>
+          <span class="checkout__step-label">Delivery</span>
+        </button>
+        <div class="checkout__step-connector"></div>
+        <button
+          class="checkout__step-indicator"
+          [class.checkout__step-indicator--active]="currentStep === 2"
+          [disabled]="currentStep < 2"
+          [attr.aria-current]="currentStep === 2 ? 'step' : null"
+        >
+          <span class="checkout__step-number">3</span>
+          <span class="checkout__step-label">Payment</span>
+        </button>
+      </div>
+
+      <!-- Step 1: Order Summary -->
+      @if (currentStep === 0) {
+        <mat-card class="checkout__summary-card">
+          <mat-card-content>
+            <h3 class="checkout__section-title">Order Summary</h3>
+
+            <div class="checkout__items">
+              @for (item of checkoutSummary.cart.items; track item.id) {
+                <div class="checkout__item">
+                  <div class="checkout__item-info">
+                    <span class="checkout__item-name">{{ item.productName }}</span>
+                    <span class="checkout__item-qty">× {{ item.quantity }}</span>
+                  </div>
+                  <span class="checkout__item-price">{{ formatPrice(item.subtotal) }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="checkout__cost-breakdown">
+              <div class="checkout__cost-row">
+                <span>Subtotal</span>
+                <span>{{ formatPrice(checkoutSummary.costBreakdown.subtotal) }}</span>
+              </div>
+              <div class="checkout__cost-row">
+                <span>Delivery Fee</span>
+                <span>{{ formatPrice(checkoutSummary.costBreakdown.deliveryFee) }}</span>
+              </div>
+              @if (checkoutSummary.costBreakdown.discount > 0) {
+                <div class="checkout__cost-row checkout__cost-row--discount">
+                  <span>Discount</span>
+                  <span>-{{ formatPrice(checkoutSummary.costBreakdown.discount) }}</span>
+                </div>
+              }
+              <div class="checkout__cost-row checkout__cost-row--total">
+                <span>Total</span>
+                <span>{{ formatPrice(checkoutSummary.costBreakdown.grandTotal) }}</span>
+              </div>
+            </div>
+
+            <div class="checkout__delivery-address">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ checkoutSummary.deliveryAddress }}</span>
+            </div>
+
+            <button
+              mat-flat-button
+              class="checkout__next-btn"
+              (click)="proceedToDelivery()"
+            >
+              Select Delivery Time
+            </button>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Step 2: Delivery Slot Selection -->
+      @if (currentStep === 1) {
+        <mat-card class="checkout__delivery-card">
+          <mat-card-content>
+            <app-delivery-scheduler (slotSelected)="onSlotSelected($event)"></app-delivery-scheduler>
+
+            <div class="checkout__nav-buttons">
+              <button mat-stroked-button (click)="goBack(0)">Back</button>
+              <button
+                mat-flat-button
+                class="checkout__next-btn"
+                [disabled]="!selectedSlot"
+                (click)="proceedToPayment()"
+              >
+                Continue to Payment
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Step 3: Payment -->
+      @if (currentStep === 2) {
+        <mat-card class="checkout__payment-card">
+          <mat-card-content>
+            <app-payment
+              [maxRetries]="3"
+              (paymentSubmit)="onPaymentSubmit($event)"
+            ></app-payment>
+
+            <div class="checkout__nav-buttons">
+              <button mat-stroked-button (click)="goBack(1)">Back</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

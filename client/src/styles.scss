@@ -1,0 +1,113 @@
+// Cartelligence Premium Theme
+// Color palette: Vibrant brand blue, midnight navy, and elegant slate blue
+@use '@angular/material' as mat;
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import '@angular/cdk/overlay-prebuilt.css';
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+// Premium Palette Design Tokens
+:root {
+  --color-primary: #166fe5;
+  --color-primary-rgb: 22, 111, 229;
+  --color-secondary: #1958b5;
+  --color-navy: #041226;
+  --color-navy-rgb: 4, 18, 38;
+  --color-navy-light: #0b1c33;
+  --color-bg-light: #f8fafe;
+  --color-bg-card: #ffffff;
+  --color-text-main: #0c1421;
+  --color-text-muted: #5e6b82;
+  --color-border: #e2e8f0;
+  
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  
+  // Status Colors
+  --color-error: #d32f2f;
+  --color-success: #2e7d32;
+  --color-warning: #ed6c02;
+  --color-info: #0288d1;
+}
+
+html {
+  height: 100%;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  background-color: var(--color-bg-light);
+  color: var(--color-text-main);
+  font-family: var(--font-family);
+}
+
+// Custom Premium Scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+// Micro-animations & Transitions
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(var(--color-navy-rgb), 0.08);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Global utility classes for status indicators
+.status-error { color: var(--color-error); }
+.status-success { color: var(--color-success); }
+.status-warning { color: var(--color-warning); }
+.status-info { color: var(--color-info); }
+
+// Global Buttons Overrides
+.btn-primary {
+  background-color: var(--color-navy);
+  color: #ffffff;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: var(--color-navy-light);
+  }
+}
+
+// Premium Overlay Tooltip Overrides
+.mat-mdc-tooltip {
+  --mdc-plain-tooltip-container-color: var(--color-navy) !important;
+  --mdc-plain-tooltip-supporting-text-color: #ffffff !important;
+  font-family: var(--font-family) !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 4px 12px rgba(var(--color-navy-rgb), 0.15) !important;
+}
+

@@ -1,0 +1,27 @@
+<div class="cost-breakdown" role="region" aria-label="Cost breakdown">
+  <h3 class="cost-breakdown__title">Order Summary</h3>
+
+  <div class="cost-breakdown__row">
+    <span class="cost-breakdown__label">Subtotal</span>
+    <span class="cost-breakdown__value">{{ formatPrice(costBreakdown.subtotal) }}</span>
+  </div>
+
+  <div class="cost-breakdown__row">
+    <span class="cost-breakdown__label">Delivery Fee</span>
+    <span class="cost-breakdown__value">{{ formatPrice(costBreakdown.deliveryFee) }}</span>
+  </div>
+
+  @if (costBreakdown.discount > 0) {
+    <div class="cost-breakdown__row cost-breakdown__row--discount">
+      <span class="cost-breakdown__label">Discount</span>
+      <span class="cost-breakdown__value">-{{ formatPrice(costBreakdown.discount) }}</span>
+    </div>
+  }
+
+  <div class="cost-breakdown__divider"></div>
+
+  <div class="cost-breakdown__row cost-breakdown__row--total">
+    <span class="cost-breakdown__label">Grand Total</span>
+    <span class="cost-breakdown__value">{{ formatPrice(costBreakdown.grandTotal) }}</span>
+  </div>
+</div>

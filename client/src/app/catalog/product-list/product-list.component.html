@@ -1,0 +1,60 @@
+<div class="product-list">
+  <h2 class="product-list__title">{{ categoryName }}</h2>
+
+  @if (loading) {
+    <div class="product-list__loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (noResults && !loading) {
+    <div class="product-list__empty" role="status">
+      <mat-icon class="product-list__empty-icon">search_off</mat-icon>
+      <p class="product-list__empty-text">No products found</p>
+    </div>
+  }
+
+  @if (!loading && !noResults) {
+    <div class="product-list__grid">
+      @for (product of products; track product.id) {
+        <mat-card
+          class="product-list__card"
+          [class.product-list__card--unavailable]="isOutOfStock(product)"
+          (click)="onProductSelect(product)"
+          (keydown.enter)="onProductSelect(product)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="product.name + ' - ' + formatPrice(product.unitPrice)"
+        >
+          <mat-card-content class="product-list__card-content">
+            <div class="product-list__product-info">
+              <h3 class="product-list__product-name">{{ product.name }}</h3>
+              <p class="product-list__product-unit">{{ product.unit }}</p>
+              <p class="product-list__product-price">{{ formatPrice(product.unitPrice) }}</p>
+            </div>
+            <div class="product-list__stock-status">
+              @if (isOutOfStock(product)) {
+                <span class="product-list__stock-badge product-list__stock-badge--out">
+                  Out of Stock
+                </span>
+              } @else {
+                <span class="product-list__stock-badge product-list__stock-badge--in">
+                  In Stock
+                </span>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="currentPage - 1"
+      [hidePageSize]="true"
+      (page)="onPageChange($event)"
+      aria-label="Select page of products"
+    ></mat-paginator>
+  }
+</div>

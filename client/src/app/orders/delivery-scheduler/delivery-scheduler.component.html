@@ -1,0 +1,47 @@
+<div class="delivery-scheduler">
+  <h3 class="delivery-scheduler__title">Select Delivery Time</h3>
+
+  @if (loading()) {
+    <div class="delivery-scheduler__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <p>Loading available slots...</p>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="delivery-scheduler__error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
+
+  @if (!loading() && !errorMessage()) {
+    <mat-tab-group class="delivery-scheduler__tabs" animationDuration="200ms">
+      @for (day of days; track day.date) {
+        <mat-tab [label]="day.label">
+          <div class="delivery-scheduler__slots">
+            @if (day.slots.length === 0) {
+              <p class="delivery-scheduler__no-slots">No available slots for this day.</p>
+            }
+            @for (slot of day.slots; track slot.id) {
+              <button
+                class="delivery-scheduler__slot"
+                [class.delivery-scheduler__slot--selected]="isSelected(slot)"
+                [class.delivery-scheduler__slot--unavailable]="!slot.isAvailable"
+                [disabled]="!slot.isAvailable"
+                (click)="selectSlot(slot)"
+                [attr.aria-label]="formatTimeRange(slot) + (slot.isAvailable ? '' : ' - Fully booked')"
+                [attr.aria-pressed]="isSelected(slot)"
+              >
+                <span class="delivery-scheduler__slot-time">{{ formatTimeRange(slot) }}</span>
+                @if (!slot.isAvailable) {
+                  <span class="delivery-scheduler__slot-status">Fully booked</span>
+                }
+              </button>
+            }
+          </div>
+        </mat-tab>
+      }
+    </mat-tab-group>
+  }
+</div>

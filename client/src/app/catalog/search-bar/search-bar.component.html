@@ -1,0 +1,83 @@
+<div class="search-bar">
+  <mat-form-field class="search-bar__field" appearance="outline">
+    <mat-label>Search products</mat-label>
+    <input
+      matInput
+      [formControl]="searchControl"
+      placeholder="Search for groceries..."
+      maxlength="100"
+      aria-label="Search products by name"
+    />
+    <mat-icon matPrefix>search</mat-icon>
+    @if (searchControl.value) {
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="searchControl.setValue('')"
+        aria-label="Clear search"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+    <mat-hint>Enter at least 2 characters to search</mat-hint>
+  </mat-form-field>
+
+  @if (loading) {
+    <div class="search-bar__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  }
+
+  @if (noResults && hasSearched && !loading) {
+    <div class="search-bar__empty" role="status">
+      <mat-icon class="search-bar__empty-icon">search_off</mat-icon>
+      <p class="search-bar__empty-text">No products found</p>
+    </div>
+  }
+
+  @if (hasSearched && !noResults && !loading) {
+    <div class="search-bar__results">
+      <div class="search-bar__results-grid">
+        @for (product of searchResults; track product.id) {
+          <mat-card
+            class="search-bar__result-card"
+            [class.search-bar__result-card--unavailable]="isOutOfStock(product)"
+            (click)="onProductSelect(product)"
+            (keydown.enter)="onProductSelect(product)"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="product.name + ' - ' + formatPrice(product.unitPrice)"
+          >
+            <mat-card-content class="search-bar__result-content">
+              <div class="search-bar__result-info">
+                <h4 class="search-bar__result-name">{{ product.name }}</h4>
+                <p class="search-bar__result-unit">{{ product.unit }}</p>
+                <p class="search-bar__result-price">{{ formatPrice(product.unitPrice) }}</p>
+              </div>
+              <div class="search-bar__result-status">
+                @if (isOutOfStock(product)) {
+                  <span class="search-bar__stock-badge search-bar__stock-badge--out">
+                    Out of Stock
+                  </span>
+                } @else {
+                  <span class="search-bar__stock-badge search-bar__stock-badge--in">
+                    In Stock
+                  </span>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <mat-paginator
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage - 1"
+        [hidePageSize]="true"
+        (page)="onPageChange($event)"
+        aria-label="Select page of search results"
+      ></mat-paginator>
+    </div>
+  }
+</div>

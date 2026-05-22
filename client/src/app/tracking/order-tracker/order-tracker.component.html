@@ -1,0 +1,24 @@
+<div class="order-tracker">
+  <h3 class="order-tracker__title">Order #{{ orderNumber() }}</h3>
+
+  <div class="order-tracker__steps">
+    @for (step of steps; track step.status; let i = $index) {
+      <div
+        class="order-tracker__step"
+        [class.order-tracker__step--completed]="isStepCompleted(i)"
+        [class.order-tracker__step--active]="isStepActive(i)"
+      >
+        <div class="order-tracker__step-icon">
+          <mat-icon>{{ isStepCompleted(i) ? 'check_circle' : step.icon }}</mat-icon>
+        </div>
+        <span class="order-tracker__step-label">{{ step.label }}</span>
+      </div>
+      @if (i < steps.length - 1) {
+        <div
+          class="order-tracker__connector"
+          [class.order-tracker__connector--completed]="isStepCompleted(i + 1)"
+        ></div>
+      }
+    }
+  </div>
+</div>

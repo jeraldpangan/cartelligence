@@ -1,0 +1,180 @@
+.order-list {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  &__filters {
+    margin-bottom: 16px;
+  }
+
+  &__filter-field {
+    width: 220px;
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+  }
+
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 0;
+    color: #666;
+    gap: 12px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 16px;
+    }
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__card {
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  &__paginator {
+    margin-top: 16px;
+  }
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__id {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__number {
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  &__status {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
+  &__total {
+    font-weight: 600;
+    font-size: 16px;
+    color: #1a73e8;
+  }
+
+  &__buyer,
+  &__items {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #444;
+  }
+
+  &__buyer-email {
+    color: #888;
+    font-size: 13px;
+  }
+
+  &__item-name {
+    font-style: italic;
+  }
+
+  &__more {
+    color: #888;
+    font-size: 13px;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  &__date {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #888;
+  }
+
+  &__icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #888;
+  }
+}
+
+// Status badge colors
+.status--confirmed {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.status--preparing {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.status--delivering {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status--delivered {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.status--cancelled {
+  background-color: #fce4ec;
+  color: #b71c1c;
+}

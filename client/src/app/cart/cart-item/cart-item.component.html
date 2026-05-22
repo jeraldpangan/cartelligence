@@ -1,0 +1,42 @@
+<div class="cart-item" role="listitem">
+  <div class="cart-item__info">
+    <span class="cart-item__name">{{ item.productName }}</span>
+    <span class="cart-item__price">{{ formatPrice(item.unitPrice) }}</span>
+  </div>
+
+  <div class="cart-item__controls">
+    <button
+      mat-icon-button
+      class="cart-item__btn"
+      (click)="decrement()"
+      [attr.aria-label]="item.quantity <= 1 ? 'Remove ' + item.productName + ' from cart' : 'Decrease quantity of ' + item.productName"
+    >
+      <mat-icon>{{ item.quantity <= 1 ? 'delete' : 'remove' }}</mat-icon>
+    </button>
+
+    <input
+      type="number"
+      class="cart-item__quantity-input"
+      [value]="item.quantity"
+      (change)="onQuantityInput($event)"
+      min="0"
+      max="99"
+      [attr.aria-label]="'Quantity of ' + item.productName"
+    />
+
+    <button
+      mat-icon-button
+      class="cart-item__btn"
+      (click)="increment()"
+      [disabled]="item.quantity >= 99"
+      [attr.aria-label]="'Increase quantity of ' + item.productName"
+    >
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+
+  <div class="cart-item__subtotal">
+    <span class="cart-item__subtotal-label">Subtotal</span>
+    <span class="cart-item__subtotal-value">{{ formatPrice(item.subtotal) }}</span>
+  </div>
+</div>

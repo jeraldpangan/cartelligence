@@ -1,0 +1,147 @@
+<div class="catalog-page-container">
+  
+  <!-- Render Search Results if query parameter is active -->
+  @if (showSearch) {
+    <div class="search-results-wrapper fade-in">
+      <div class="search-results-header">
+        <h2 class="search-results-title">Search Results for "{{ searchQuery }}"</h2>
+        <a routerLink="/catalog" class="back-home-link">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Back to Catalog</span>
+        </a>
+      </div>
+      <app-search-bar></app-search-bar>
+    </div>
+  } @else {
+    <!-- Main Premium Dashboard -->
+    <div class="dashboard-wrapper fade-in">
+      
+      <!-- Top 2-Column Section (Categories Sidebar & Hero Banner) -->
+      <div class="top-row-grid">
+        
+        <!-- Left Sidebar: Categories Navigation -->
+        <aside class="sidebar-categories" aria-label="Product categories">
+          <ul class="category-list">
+            @for (category of sidebarCategories; track category.id) {
+              <li 
+                class="category-item" 
+                (click)="onCategorySelect(category)"
+                (keydown.enter)="onCategorySelect(category)"
+                tabindex="0"
+                role="button"
+                [attr.aria-label]="'Browse ' + category.name + ' category'"
+              >
+                <div class="category-icon-wrapper">
+                  <mat-icon class="category-icon">{{ category.icon }}</mat-icon>
+                </div>
+                <span class="category-name">{{ category.name }}</span>
+              </li>
+            }
+          </ul>
+        </aside>
+
+        <!-- Right: Promotional Hero Banner -->
+        <div class="promo-hero-section">
+          <div class="hero-banner" style="background-image: url('/hero-workspace.png')">
+            <div class="hero-content">
+              <span class="hero-subtitle">EXCLUSIVE PRE-ORDER</span>
+              <h1 class="hero-title">Redefine Your Digital Workspace</h1>
+              <p class="hero-description">Premium tech essentials curated for the modern minimalist professional.</p>
+              <button class="hero-cta-button hover-lift">DISCOVER NOW</button>
+            </div>
+            
+            <!-- Slider Dots Indicator -->
+            <div class="slider-dots" aria-hidden="true">
+              <span class="slider-dot active"></span>
+              <span class="slider-dot"></span>
+              <span class="slider-dot"></span>
+              <span class="slider-dot"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Promo Cards (Flash Sale, Vouchers, Global Store) -->
+      <div class="quick-promos-grid">
+        <!-- Card 1: Flash Sale -->
+        <div class="quick-promo-card hover-lift">
+          <div class="promo-badge-circle flash-badge">
+            <mat-icon class="promo-badge-icon">flash_on</mat-icon>
+          </div>
+          <div class="promo-text-container">
+            <span class="promo-title">Flash Sale</span>
+            <span class="promo-desc">Hurry, limited time!</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Vouchers -->
+        <div class="quick-promo-card hover-lift">
+          <div class="promo-badge-circle voucher-badge">
+            <mat-icon class="promo-badge-icon">local_offer</mat-icon>
+          </div>
+          <div class="promo-text-container">
+            <span class="promo-title">Vouchers</span>
+            <span class="promo-desc">Extra 15% OFF</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Global Store -->
+        <div class="quick-promo-card hover-lift">
+          <div class="promo-badge-circle global-badge">
+            <mat-icon class="promo-badge-icon">diamond</mat-icon>
+          </div>
+          <div class="promo-text-container">
+            <span class="promo-title">Global Store</span>
+            <span class="promo-desc">Direct from Japan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLASH SALE Section -->
+      <section class="flash-sale-section" aria-labelledby="flash-sale-title">
+        <div class="flash-sale-header">
+          <div class="flash-sale-title-timer">
+            <h2 id="flash-sale-title" class="flash-title">FLASH SALE</h2>
+            <div class="countdown-container">
+              <span class="ends-in-text">Ends in:</span>
+              <div class="timer-box-wrapper">
+                <span class="timer-box">{{ countdownHours }}</span>
+                <span class="timer-colon">:</span>
+                <span class="timer-box">{{ countdownMinutes }}</span>
+                <span class="timer-colon">:</span>
+                <span class="timer-box">{{ countdownSeconds }}</span>
+              </div>
+            </div>
+          </div>
+          <a routerLink="/catalog" class="view-all-link">VIEW ALL</a>
+        </div>
+
+        <!-- Horizontal Product Grid of 6 Items -->
+        <div class="products-horizontal-grid">
+          @for (product of premiumProducts; track product.id) {
+            <article class="product-card hover-lift">
+              <div class="product-image-container">
+                <img [src]="product.image" [alt]="product.name" class="product-image" loading="lazy" />
+                <span class="discount-badge">-{{ getDiscountPercentage(product.price, product.originalPrice) }}%</span>
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <div class="product-rating-row">
+                  <span class="star-icon">★</span>
+                  <span class="rating-value">{{ product.rating }}</span>
+                  <span class="reviews-count">({{ product.reviewsCount }})</span>
+                </div>
+                <div class="product-price-row">
+                  <span class="price-current">{{ formatPrice(product.price) }}</span>
+                  <span class="price-original">{{ formatPrice(product.originalPrice) }}</span>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+    </div>
+  }
+</div>

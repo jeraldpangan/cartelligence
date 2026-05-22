@@ -1,0 +1,20 @@
+<div class="category-list">
+  <h2 class="category-list__title">Shop by Category</h2>
+  <div class="category-list__grid">
+    @for (category of categories; track category.id) {
+      <mat-card
+        class="category-list__card"
+        (click)="onCategorySelect(category)"
+        (keydown.enter)="onCategorySelect(category)"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'Browse ' + category.name + ' category'"
+      >
+        <mat-card-content class="category-list__card-content">
+          <mat-icon class="category-list__icon">{{ category.icon }}</mat-icon>
+          <span class="category-list__name">{{ category.name }}</span>
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+</div>

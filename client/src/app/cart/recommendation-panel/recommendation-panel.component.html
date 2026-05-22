@@ -1,0 +1,43 @@
+@if (cartItemCount >= 3) {
+  <div class="recommendation-panel" role="region" aria-label="Recommended products">
+    <h3 class="recommendation-panel__title">
+      <mat-icon class="recommendation-panel__title-icon">lightbulb</mat-icon>
+      You might also like
+    </h3>
+
+    @if (loading) {
+      <div class="recommendation-panel__loading">
+        <mat-spinner diameter="24"></mat-spinner>
+      </div>
+    }
+
+    @if (unavailable && !loading) {
+      <p class="recommendation-panel__unavailable" role="status">
+        Recommendations are currently unavailable.
+      </p>
+    }
+
+    @if (!loading && !unavailable && recommendations.length > 0) {
+      <div class="recommendation-panel__list">
+        @for (product of recommendations; track product.id) {
+          <mat-card class="recommendation-panel__card">
+            <mat-card-content class="recommendation-panel__card-content">
+              <div class="recommendation-panel__product-info">
+                <span class="recommendation-panel__product-name">{{ product.name }}</span>
+                <span class="recommendation-panel__product-price">{{ formatPrice(product.unitPrice) }}</span>
+              </div>
+              <button
+                mat-icon-button
+                class="recommendation-panel__add-btn"
+                (click)="onAddToCart(product)"
+                [attr.aria-label]="'Add ' + product.name + ' to cart'"
+              >
+                <mat-icon>add_shopping_cart</mat-icon>
+              </button>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+  </div>
+}

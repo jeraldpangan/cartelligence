@@ -1,0 +1,306 @@
+<div class="register-page-wrapper">
+  <!-- Top Header -->
+  <header class="register-header">
+    <div class="logo-container">
+      @if (logoFailed()) {
+        <!-- SVG Mascot Fallback -->
+        <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+          <circle cx="35" cy="85" r="8" fill="#166fe5" />
+          <circle cx="75" cy="85" r="8" fill="#166fe5" />
+          <circle cx="35" cy="85" r="4" fill="#ffffff" />
+          <circle cx="75" cy="85" r="4" fill="#ffffff" />
+          <path d="M30 65L35 77M70 65L75 77" stroke="#166fe5" stroke-width="4" stroke-linecap="round"/>
+          <rect x="20" y="25" width="60" height="40" rx="10" fill="#e1eeff" stroke="#166fe5" stroke-width="4"/>
+          <path d="M15 32H20M15 32L10 20M10 20H2" stroke="#166fe5" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="40" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff"/>
+          <circle cx="60" cy="42" r="10" stroke="#166fe5" stroke-width="4" fill="#ffffff"/>
+          <path d="M50 42H52" stroke="#166fe5" stroke-width="4"/>
+          <path d="M37 42C37 40 43 40 43 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round"/>
+          <path d="M57 42C57 40 63 40 63 42" stroke="#166fe5" stroke-width="2" stroke-linecap="round"/>
+          <path d="M44 54C44 58 56 58 56 54" stroke="#166fe5" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      } @else {
+        <!-- Custom logo.png with SVG fallback -->
+        <img
+          src="/logo.png"
+          alt="Cartelligence Logo"
+          class="logo-img"
+          (error)="logoFailed.set(true)"
+        />
+      }
+      <span class="brand-name">Cartelligence</span>
+    </div>
+
+    <a href="javascript:void(0)" class="help-link" aria-label="Help">
+      <span>Help</span>
+      <mat-icon class="help-icon">help_outline</mat-icon>
+    </a>
+  </header>
+
+  <!-- Central Split Layout -->
+  <main class="register-split-container">
+    <!-- Left Campaign Card -->
+    <section class="campaign-pane" aria-labelledby="campaign-heading">
+      <div class="campaign-bg-wrapper">
+        <img src="/register-campaign-bg.png" alt="Cartelligence Catalog Workspace Essentials" class="campaign-img" />
+      </div>
+      <div class="campaign-overlay">
+        <!-- Top Branding inside campaign overlay -->
+        <div class="campaign-brand">
+          <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg-white">
+            <circle cx="35" cy="85" r="8" fill="#ffffff" />
+            <circle cx="75" cy="85" r="8" fill="#ffffff" />
+            <path d="M30 65L35 77M70 65L75 77" stroke="#ffffff" stroke-width="4"/>
+            <rect x="20" y="25" width="60" height="40" rx="10" fill="rgba(255,255,255,0.15)" stroke="#ffffff" stroke-width="4"/>
+            <path d="M15 32H20M15 32L10 20M10 20H2" stroke="#ffffff" stroke-width="4"/>
+            <circle cx="40" cy="42" r="10" stroke="#ffffff" stroke-width="4"/>
+            <circle cx="60" cy="42" r="10" stroke="#ffffff" stroke-width="4"/>
+            <path d="M44 54C44 58 56 58 56 54" stroke="#ffffff" stroke-width="3"/>
+          </svg>
+          <span>Cartelligence</span>
+        </div>
+        <h2 id="campaign-heading" class="campaign-title">Join the Workspace Revolution</h2>
+        <p class="campaign-desc">
+          Create an account to start curating your professional tech essentials. Explore high-quality tech setups, custom productivity lists, and real-time delivery features designed for modern professionals.
+        </p>
+      </div>
+    </section>
+
+    <!-- Right Form Pane -->
+    <section class="form-pane" aria-labelledby="form-title">
+      <div class="register-card-wrapper">
+        <h1 id="form-title" class="welcome-title">Create Account</h1>
+        <p class="welcome-subtitle">Sign up to get started.</p>
+
+        @if (errorMessage()) {
+          <div class="error-banner" role="alert">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        @if (successMessage()) {
+          <div class="success-banner" role="status">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ successMessage() }}</span>
+          </div>
+        }
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="signup-form">
+          <!-- Role selector -->
+          <div class="role-selector-container">
+            <label class="custom-label">I want to join as a:</label>
+            <mat-button-toggle-group
+              formControlName="role"
+              aria-label="Account type"
+              class="role-toggle-group"
+            >
+              <mat-button-toggle [value]="UserRole.Buyer" class="role-toggle">
+                <mat-icon>shopping_cart</mat-icon>
+                <span>Buyer</span>
+              </mat-button-toggle>
+              <mat-button-toggle [value]="UserRole.Seller" class="role-toggle">
+                <mat-icon>storefront</mat-icon>
+                <span>Seller</span>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+            
+            <p class="role-hint">
+              @if (isSeller) {
+                <mat-icon class="role-hint-icon">storefront</mat-icon>
+                <span>List and sell your premium tech products on Cartelligence.</span>
+              } @else {
+                <mat-icon class="role-hint-icon">shopping_cart</mat-icon>
+                <span>Browse and purchase high-quality workspace essentials.</span>
+              }
+            </p>
+          </div>
+
+          <!-- Full Name -->
+          <div class="input-group">
+            <label class="custom-label" for="fullName-field">Full Name</label>
+            <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="input-icon">person_outline</mat-icon>
+              <input
+                matInput
+                id="fullName-field"
+                type="text"
+                formControlName="fullName"
+                placeholder="John Doe"
+                autocomplete="name"
+              />
+            </mat-form-field>
+            @if (registerForm.get('fullName')?.hasError('required') && registerForm.get('fullName')?.touched) {
+              <span class="field-error-text">Full name is required</span>
+            }
+            @if (registerForm.get('fullName')?.hasError('maxlength') && registerForm.get('fullName')?.touched) {
+              <span class="field-error-text">Full name must be at most 100 characters</span>
+            }
+          </div>
+
+          <!-- Email Address -->
+          <div class="input-group">
+            <label class="custom-label" for="email-field">Email Address</label>
+            <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="input-icon">mail_outline</mat-icon>
+              <input
+                matInput
+                id="email-field"
+                type="email"
+                formControlName="email"
+                placeholder="you@company.com"
+                autocomplete="email"
+              />
+            </mat-form-field>
+            @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+              <span class="field-error-text">Email is required</span>
+            }
+            @if (registerForm.get('email')?.hasError('pattern') && registerForm.get('email')?.touched) {
+              <span class="field-error-text">Please enter a valid email address</span>
+            }
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+            <label class="custom-label" for="password-field">Password</label>
+            <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="input-icon">lock_outline</mat-icon>
+              <input
+                matInput
+                id="password-field"
+                [type]="hidePassword() ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+                class="visibility-toggle"
+              >
+                <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            
+            <!-- Password strength bars -->
+            @if (registerForm.get('password')?.value) {
+              <div class="password-strength-container">
+                <div class="strength-bars">
+                  <div class="strength-bar" [style.background-color]="getPasswordStrength().score >= 1 ? getPasswordStrength().color : '#e2e8f0'"></div>
+                  <div class="strength-bar" [style.background-color]="getPasswordStrength().score >= 2 ? getPasswordStrength().color : '#e2e8f0'"></div>
+                  <div class="strength-bar" [style.background-color]="getPasswordStrength().score >= 3 ? getPasswordStrength().color : '#e2e8f0'"></div>
+                </div>
+                <span class="strength-label" [style.color]="getPasswordStrength().color">
+                  {{ getPasswordStrength().label }}
+                </span>
+              </div>
+            }
+
+            @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+              <div class="password-errors-list">
+                @for (err of getPasswordErrors(); track err) {
+                  <span class="field-error-text">{{ err }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="input-group">
+            <label class="custom-label" for="confirmPassword-field">Confirm Password</label>
+            <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="input-icon">lock_outline</mat-icon>
+              <input
+                matInput
+                id="confirmPassword-field"
+                [type]="hideConfirmPassword() ? 'password' : 'text'"
+                formControlName="confirmPassword"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="toggleConfirmPasswordVisibility()"
+                [attr.aria-label]="hideConfirmPassword() ? 'Show password' : 'Hide password'"
+                class="visibility-toggle"
+              >
+                <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.hasError('required')) {
+              <span class="field-error-text">Confirm password is required</span>
+            }
+            @if (registerForm.touched && registerForm.hasError('passwordMismatch')) {
+              <span class="field-error-text">Passwords do not match</span>
+            }
+          </div>
+
+          <!-- Delivery Address (Collapsible to protect design, prefilled for ease) -->
+          <div class="delivery-address-section">
+            <button type="button" class="toggle-delivery-btn" (click)="showAddress.set(!showAddress())">
+              <mat-icon class="toggle-icon">location_on</mat-icon>
+              <span>Delivery Details (Default Configured)</span>
+              <mat-icon class="expand-icon">{{ showAddress() ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            
+            @if (showAddress()) {
+              <div class="delivery-field-container">
+                <label class="custom-label" for="address-field">Delivery Address</label>
+                <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+                  <textarea
+                    matInput
+                    id="address-field"
+                    formControlName="deliveryAddress"
+                    placeholder="123 Main St, Olongapo City"
+                    rows="2"
+                  ></textarea>
+                </mat-form-field>
+                @if (registerForm.get('deliveryAddress')?.hasError('required') && registerForm.get('deliveryAddress')?.touched) {
+                  <span class="field-error-text">Delivery address is required</span>
+                }
+                @if (registerForm.get('deliveryAddress')?.hasError('minlength') && registerForm.get('deliveryAddress')?.touched) {
+                  <span class="field-error-text">Address must be at least 10 characters</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Terms of Service Checkbox -->
+          <div class="tos-row">
+            <mat-checkbox color="primary" formControlName="agreeToTerms" class="tos-checkbox">
+              <span class="checkbox-label">I agree to the <a href="javascript:void(0)" class="tos-link">Terms of Service</a> and <a href="javascript:void(0)" class="tos-link">Privacy Policy</a></span>
+            </mat-checkbox>
+            @if (registerForm.get('agreeToTerms')?.hasError('required') && registerForm.get('agreeToTerms')?.touched) {
+              <span class="field-error-text">You must agree to the Terms of Service</span>
+            }
+          </div>
+
+          <!-- Register Button -->
+          <button
+            mat-flat-button
+            class="full-width submit-button"
+            type="submit"
+            [disabled]="isLoading()"
+          >
+            @if (isLoading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Create Account
+            }
+          </button>
+        </form>
+
+        <!-- Redirect to Login -->
+        <div class="login-redirect">
+          <span>Already have an account?</span>
+          <a routerLink="/login" class="login-link">Log In</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

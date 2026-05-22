@@ -1,0 +1,75 @@
+<div class="order-confirmation">
+  @if (loading) {
+    <div class="order-confirmation__loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="order-confirmation__error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <a mat-button routerLink="/catalog">Back to Catalog</a>
+    </div>
+  }
+
+  @if (!loading && order) {
+    <div class="order-confirmation__success">
+      <div class="order-confirmation__icon-wrapper">
+        <mat-icon class="order-confirmation__check-icon">check_circle</mat-icon>
+      </div>
+
+      <h2 class="order-confirmation__heading">Order Confirmed</h2>
+      <p class="order-confirmation__subheading">Thank you for your purchase!</p>
+
+      <mat-card class="order-confirmation__details">
+        <mat-card-content>
+          <div class="order-confirmation__detail-row">
+            <span class="order-confirmation__label">Order Number</span>
+            <span class="order-confirmation__value order-confirmation__value--bold">
+              {{ order.orderNumber }}
+            </span>
+          </div>
+
+          <div class="order-confirmation__detail-row">
+            <span class="order-confirmation__label">Total</span>
+            <span class="order-confirmation__value">{{ formatPrice(order.grandTotal) }}</span>
+          </div>
+
+          <div class="order-confirmation__detail-row">
+            <span class="order-confirmation__label">Delivery</span>
+            <span class="order-confirmation__value">{{ formatDeliveryTime() }}</span>
+          </div>
+
+          <div class="order-confirmation__detail-row">
+            <span class="order-confirmation__label">Address</span>
+            <span class="order-confirmation__value">{{ order.deliveryAddress }}</span>
+          </div>
+
+          <div class="order-confirmation__items">
+            <h4 class="order-confirmation__items-title">Items Ordered</h4>
+            @for (item of order.items; track item.id) {
+              <div class="order-confirmation__item">
+                <span class="order-confirmation__item-name">
+                  {{ item.productName }} × {{ item.quantity }}
+                </span>
+                <span class="order-confirmation__item-price">
+                  {{ formatPrice(item.subtotal) }}
+                </span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="order-confirmation__actions">
+        <a mat-flat-button routerLink="/catalog" class="order-confirmation__btn-primary">
+          Continue Shopping
+        </a>
+        <a mat-stroked-button routerLink="/tracking" class="order-confirmation__btn-secondary">
+          Track Order
+        </a>
+      </div>
+    </div>
+  }
+</div>

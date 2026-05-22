@@ -1,0 +1,134 @@
+<div class="review-form">
+
+  <!-- ── Success Confirmation (Requirement 5.6) ── -->
+  @if (submitted) {
+    <div class="review-form__success" role="status" aria-live="polite">
+      <mat-icon class="review-form__success-icon">check_circle</mat-icon>
+      <h3 class="review-form__success-title">Review Submitted!</h3>
+      <p class="review-form__success-message">
+        Thank you for sharing your feedback. Your review helps other buyers make
+        informed decisions.
+      </p>
+    </div>
+  }
+
+  <!-- ── Review Form ── -->
+  @if (!submitted) {
+    <mat-card class="review-form__card">
+      <mat-card-content>
+        <h3 class="review-form__title">Write a Review</h3>
+
+        <!-- Error Banner (403 / 409 / other) -->
+        @if (errorMessage) {
+          <div class="review-form__error" role="alert" aria-live="assertive">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ errorMessage }}</p>
+          </div>
+        }
+
+        <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()" novalidate>
+
+          <!-- ── Star Rating (Requirement 5.4) ── -->
+          <div
+            class="review-form__rating-group"
+            role="group"
+            aria-labelledby="rating-label"
+          >
+            <label id="rating-label" class="review-form__label">
+              Your Rating <span class="review-form__required" aria-hidden="true">*</span>
+            </label>
+
+            <div
+              class="review-form__stars"
+              (mouseleave)="onStarLeave()"
+              role="radiogroup"
+              aria-label="Star rating"
+            >
+              @for (star of stars; track star) {
+                <button
+                  type="button"
+                  class="review-form__star"
+                  [class.review-form__star--filled]="isStarFilled(star)"
+                  (mouseenter)="onStarHover(star)"
+                  (click)="onStarClick(star)"
+                  [attr.aria-label]="star + ' star' + (star === 1 ? '' : 's')"
+                  [attr.aria-pressed]="selectedRating === star"
+                  role="radio"
+                  [attr.aria-checked]="selectedRating === star"
+                >
+                  <mat-icon>{{ isStarFilled(star) ? 'star' : 'star_border' }}</mat-icon>
+                </button>
+              }
+            </div>
+
+            <!-- Rating validation error -->
+            @if (reviewForm.get('rating')?.touched && reviewForm.get('rating')?.errors?.['min']) {
+              <p class="review-form__field-error" role="alert">
+                Please select a star rating.
+              </p>
+            }
+          </div>
+
+          <!-- ── Comment Input (Requirement 5.4) ── -->
+          <mat-form-field class="review-form__comment-field" appearance="outline">
+            <mat-label>Your Comment</mat-label>
+            <textarea
+              matInput
+              formControlName="comment"
+              rows="5"
+              placeholder="Share your experience with this product (10–500 characters)..."
+              aria-describedby="comment-counter comment-hint"
+            ></textarea>
+
+            <mat-hint id="comment-hint" align="start">
+              Minimum {{ commentMinLength }} characters
+            </mat-hint>
+
+            <!-- Character counter -->
+            <mat-hint
+              id="comment-counter"
+              align="end"
+              [class]="'review-form__char-counter review-form__char-counter--' + commentLengthClass"
+            >
+              {{ commentLength }} / {{ commentMaxLength }}
+            </mat-hint>
+
+            @if (commentControl.touched && commentControl.errors?.['required']) {
+              <mat-error>Comment is required.</mat-error>
+            } @else if (commentControl.touched && commentControl.errors?.['minlength']) {
+              <mat-error>
+                Comment must be at least {{ commentMinLength }} characters
+                (currently {{ commentLength }}).
+              </mat-error>
+            } @else if (commentControl.touched && commentControl.errors?.['maxlength']) {
+              <mat-error>
+                Comment cannot exceed {{ commentMaxLength }} characters
+                (currently {{ commentLength }}).
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <!-- ── Submit Button ── -->
+          <div class="review-form__actions">
+            <button
+              mat-flat-button
+              type="submit"
+              class="review-form__submit-btn"
+              [disabled]="submitting"
+              aria-label="Submit review"
+            >
+              @if (submitting) {
+                <mat-spinner diameter="20" class="review-form__spinner"></mat-spinner>
+                <span>Submitting…</span>
+              } @else {
+                <span>Submit Review</span>
+              }
+            </button>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+</div>

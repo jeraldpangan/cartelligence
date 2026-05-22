@@ -1,0 +1,6 @@
+@if (isVisible()) {
+  <div class="offline-indicator" role="status" aria-live="polite">
+    <mat-icon class="offline-indicator__icon">cloud_off</mat-icon>
+    <span class="offline-indicator__text">{{ stalenessText() }}</span>
+  </div>
+}

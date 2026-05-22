@@ -1,0 +1,84 @@
+<div class="product-detail">
+  @if (loading) {
+    <div class="product-detail__loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="product-detail__error">
+      <mat-icon>error_outline</mat-icon>
+      <p>Product not found</p>
+      <button mat-stroked-button (click)="goBack()">Back to Catalog</button>
+    </div>
+  }
+
+  @if (product && !loading) {
+    <button mat-button class="product-detail__back" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back
+    </button>
+
+    <mat-card class="product-detail__card">
+      <mat-card-content class="product-detail__content">
+        <div class="product-detail__header">
+          <h1 class="product-detail__name">{{ product.name }}</h1>
+          <span
+            class="product-detail__stock"
+            [class.product-detail__stock--out]="isOutOfStock()"
+          >
+            {{ isOutOfStock() ? 'Out of Stock' : 'In Stock' }}
+          </span>
+        </div>
+
+        <p class="product-detail__price">{{ formatPrice(product.unitPrice) }}</p>
+        <p class="product-detail__unit">per {{ product.unit }}</p>
+
+        @if (product.description) {
+          <div class="product-detail__section">
+            <h3>Description</h3>
+            <p>{{ product.description }}</p>
+          </div>
+        }
+
+        @if (product.nutritionalInfo) {
+          <div class="product-detail__section">
+            <h3>Nutritional Information</h3>
+            <p>{{ product.nutritionalInfo }}</p>
+          </div>
+        }
+
+        @if (isOutOfStock()) {
+          <p class="product-detail__unavailable-msg">
+            This product is currently unavailable.
+          </p>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    @if (relatedProducts.length > 0) {
+      <div class="product-detail__related">
+        <h2 class="product-detail__related-title">Related Products</h2>
+        <div class="product-detail__related-grid">
+          @for (related of relatedProducts; track related.id) {
+            <mat-card
+              class="product-detail__related-card"
+              [class.product-detail__related-card--unavailable]="!related.isAvailable || related.stockQuantity === 0"
+              (click)="onRelatedProductSelect(related)"
+              (keydown.enter)="onRelatedProductSelect(related)"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="related.name + ' - ' + formatPrice(related.unitPrice)"
+            >
+              <mat-card-content>
+                <h4 class="product-detail__related-name">{{ related.name }}</h4>
+                <p class="product-detail__related-price">{{ formatPrice(related.unitPrice) }}</p>
+                <p class="product-detail__related-unit">{{ related.unit }}</p>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

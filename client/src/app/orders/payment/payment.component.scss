@@ -1,0 +1,154 @@
+.payment {
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin: 0 0 1.25rem;
+    font-family: var(--font-family);
+    letter-spacing: -0.01em;
+  }
+
+  &__methods {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-bottom: 2rem;
+  }
+
+  &__method-option {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: rgba(22, 111, 229, 0.4);
+      background-color: #f8fafc;
+    }
+
+    ::ng-deep .mdc-form-field {
+      width: 100%;
+    }
+  }
+
+  &__method-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-family);
+    font-weight: 600;
+    color: var(--color-navy);
+
+    mat-icon {
+      color: var(--color-primary);
+    }
+  }
+
+  &__error {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-family: var(--font-family);
+
+    mat-icon {
+      color: var(--color-error);
+      flex-shrink: 0;
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  &__error-content {
+    flex: 1;
+  }
+
+  &__error-message {
+    margin: 0 0 0.25rem;
+    color: var(--color-error);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  &__error-retry {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+  }
+
+  &__field {
+    width: 100%;
+    
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: #ffffff !important;
+    }
+
+    &--half {
+      flex: 1;
+    }
+  }
+
+  &__row {
+    display: flex;
+    gap: 1.25rem;
+
+    @media (max-width: 767px) {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+  }
+
+  &__submit {
+    margin-top: 1.5rem;
+    padding: 0.75rem 2rem !important;
+    background-color: var(--color-navy) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    border-radius: 6px !important;
+    height: 48px;
+    font-family: var(--font-family);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    box-shadow: none !important;
+
+    &:disabled {
+      background-color: #e2e8f0 !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed;
+      opacity: 1 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-navy-light) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(4, 18, 38, 0.15) !important;
+    }
+
+    mat-spinner {
+      ::ng-deep circle {
+        stroke: #ffffff !important;
+      }
+    }
+  }
+}

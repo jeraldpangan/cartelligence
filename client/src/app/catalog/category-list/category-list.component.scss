@@ -1,0 +1,67 @@
+.category-list {
+  padding: 1rem;
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: #1a1a1a;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+
+    // Mobile: 2 columns
+    @media (max-width: 767px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    // Tablet: 3-4 columns
+    @media (min-width: 768px) and (max-width: 1023px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    // Desktop: 7 columns (all categories in one row)
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(7, 1fr);
+    }
+  }
+
+  &__card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #e6e6e6;
+
+    &:hover,
+    &:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      outline: 2px solid #333333;
+    }
+  }
+
+  &__card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0.5rem;
+    text-align: center;
+  }
+
+  &__icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: #333333;
+    margin-bottom: 0.5rem;
+  }
+
+  &__name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1a1a1a;
+  }
+}

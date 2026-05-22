@@ -1,0 +1,144 @@
+<div class="review-list">
+
+  <!-- ── Loading State ── -->
+  @if (loading) {
+    <div class="review-list__loading" role="status" aria-label="Loading reviews">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  <!-- ── Error State ── -->
+  @if (!loading && error) {
+    <div class="review-list__error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-stroked-button (click)="loadData()">Retry</button>
+    </div>
+  }
+
+  <!-- ── Content ── -->
+  @if (!loading && !error) {
+
+    <!-- ── Review Summary (Requirements 6.1, 6.2, 6.3, 6.4) ── -->
+    @if (summary) {
+      <div class="review-summary" aria-label="Review summary">
+
+        <!-- Average Rating Display -->
+        <div class="review-summary__average">
+          <span class="review-summary__score" aria-label="{{ summary.averageRating }} out of 5 stars">
+            {{ summary.averageRating | number: '1.1-1' }}
+          </span>
+          <div class="review-summary__stars" aria-hidden="true">
+            @for (state of getStarStates(summary.averageRating); track $index) {
+              <mat-icon class="review-summary__star review-summary__star--{{ state }}">
+                {{ getStarIcon(state) }}
+              </mat-icon>
+            }
+          </div>
+          <span class="review-summary__count">
+            {{ summary.totalReviews }} {{ summary.totalReviews === 1 ? 'review' : 'reviews' }}
+          </span>
+        </div>
+
+        <!-- Rating Distribution Bar Chart (Requirement 6.4) -->
+        @if (summary.totalReviews > 0) {
+          <div class="review-summary__distribution" aria-label="Rating distribution">
+            @for (level of ratingLevels; track level) {
+              <div class="review-summary__bar-row">
+                <span class="review-summary__bar-label" aria-hidden="true">
+                  {{ level }}
+                  <mat-icon class="review-summary__bar-star">star</mat-icon>
+                </span>
+                <div
+                  class="review-summary__bar-track"
+                  role="progressbar"
+                  [attr.aria-valuenow]="getDistributionPercent(level)"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  [attr.aria-label]="level + ' star: ' + getDistributionCount(level) + ' reviews'"
+                >
+                  <div
+                    class="review-summary__bar-fill"
+                    [style.width.%]="getDistributionPercent(level)"
+                  ></div>
+                </div>
+                <span class="review-summary__bar-count">{{ getDistributionCount(level) }}</span>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- ── Empty State (Requirement 6.2) ── -->
+    @if (summary && summary.totalReviews === 0) {
+      <div class="review-list__empty" role="status">
+        <mat-icon class="review-list__empty-icon">rate_review</mat-icon>
+        <p class="review-list__empty-title">No reviews yet</p>
+        <p class="review-list__empty-subtitle">Be the first to share your experience with this product.</p>
+      </div>
+    }
+
+    <!-- ── Review Items (Requirement 6.5) ── -->
+    @if (reviews.length > 0) {
+      <div class="review-list__items" aria-label="Customer reviews">
+        @for (review of reviews; track trackByReviewId($index, review)) {
+          <div class="review-item" aria-label="Review by {{ review.reviewerName }}">
+
+            <!-- Reviewer Header -->
+            <div class="review-item__header">
+              <div class="review-item__reviewer">
+                <span class="review-item__avatar" aria-hidden="true">
+                  {{ review.reviewerName.charAt(0).toUpperCase() }}
+                </span>
+                <div class="review-item__reviewer-info">
+                  <span class="review-item__name">{{ review.reviewerName }}</span>
+                  <time
+                    class="review-item__date"
+                    [attr.datetime]="review.createdAt"
+                  >
+                    {{ review.createdAt | date: 'MMM d, y' }}
+                  </time>
+                </div>
+              </div>
+
+              <!-- Star Rating -->
+              <div
+                class="review-item__stars"
+                [attr.aria-label]="review.rating + ' out of 5 stars'"
+              >
+                @for (star of stars; track star) {
+                  <mat-icon
+                    class="review-item__star"
+                    [class.review-item__star--filled]="isStarFilled(star, review.rating)"
+                    aria-hidden="true"
+                  >
+                    {{ isStarFilled(star, review.rating) ? 'star' : 'star_border' }}
+                  </mat-icon>
+                }
+              </div>
+            </div>
+
+            <!-- Comment Text -->
+            <p class="review-item__comment">{{ review.comment }}</p>
+
+          </div>
+        }
+      </div>
+
+      <!-- ── Pagination (Requirement 6.5) ── -->
+      <mat-paginator
+        class="review-list__paginator"
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage - 1"
+        [hidePageSize]="true"
+        (page)="onPageChange($event)"
+        aria-label="Select page of reviews"
+      ></mat-paginator>
+    }
+
+  }
+
+</div>

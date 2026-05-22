@@ -1,0 +1,9 @@
+<div class="eta-display" [class.eta-display--unavailable]="isUnavailable()">
+  <mat-icon class="eta-display__icon">
+    {{ isUnavailable() ? 'schedule' : 'delivery_dining' }}
+  </mat-icon>
+  <div class="eta-display__text">
+    <span class="eta-display__label">Estimated Arrival</span>
+    <span class="eta-display__value">{{ displayText() }}</span>
+  </div>
+</div>

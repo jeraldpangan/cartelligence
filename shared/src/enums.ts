@@ -1,0 +1,31 @@
+/**
+ * User roles for role-based access control.
+ */
+export enum UserRole {
+  Buyer = 'buyer',
+  Seller = 'seller',
+}
+
+/**
+ * Product categories available in the Cartelligence grocery catalog.
+ */
+export enum ProductCategory {
+  Produce = 'produce',
+  Dairy = 'dairy',
+  Meat = 'meat',
+  Beverages = 'beverages',
+  Snacks = 'snacks',
+  Household = 'household',
+  PersonalCare = 'personal_care',
+}
+
+/**
+ * Order lifecycle statuses for tracking delivery progress.
+ */
+export enum OrderStatus {
+  Confirmed = 'confirmed',
+  BeingPrepared = 'being_prepared',
+  OutForDelivery = 'out_for_delivery',
+  Delivered = 'delivered',
+  Cancelled = 'cancelled',
+}
